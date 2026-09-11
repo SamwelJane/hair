@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { SiteHeader } from "@/components/storefront/SiteHeader";
 import { SiteFooter } from "@/components/storefront/SiteFooter";
@@ -113,6 +114,15 @@ export default async function HomePage() {
           )}
         </section>
 
+        <section className="mx-auto max-w-6xl px-6 pb-12">
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <div><p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-accent">The Hiar edit</p><h2 className="mt-2 text-2xl font-semibold text-brand-ink">Hair that feels like you</h2></div>
+            <p className="max-w-sm text-right text-sm text-brand-muted">See the textures, movement, and finishes behind every collection.</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {["https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?q=85&w=900&auto=format&fit=crop", "https://images.unsplash.com/photo-1562322140-8baeececf3df?q=85&w=900&auto=format&fit=crop", "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?q=85&w=900&auto=format&fit=crop"].map((image, index) => <div key={image} className={`relative overflow-hidden rounded-2xl ${index === 1 ? "md:translate-y-8" : ""}`}><Image src={image} alt={["Glossy wave hair", "Salon-ready texture", "Natural movement and volume"][index]} width={900} height={1125} className="aspect-[4/5] w-full object-cover" /></div>)}
+          </div>
+        </section>
         <ProcessSteps />
         <InfoCards />
       </main>

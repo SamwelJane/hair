@@ -90,6 +90,11 @@ model Product {
   supplierId         String
   supplier           Supplier @relation(fields: [supplierId], references: [id])
   description        String
+  hairLength         String?
+  texture            String?
+  color              String?
+  quality            String?
+  accessoryType      String?
   countryOfOrigin    String
   processingTimeDays Int      @default(7)
   basePriceUsd       Decimal  @db.Decimal(10, 2)
@@ -188,6 +193,17 @@ model CountryShippingRule {
 
 // Admin-set manual USD -> KES conversion rate. Single current-rate row per pair;
 // history of who changed it and when is captured via AuditLog.
+model PricingSetting {
+  id                  String   @id @default("global")
+  commissionPct       Decimal  @default(10) @db.Decimal(5, 2)
+  shippingPerKgUsd    Decimal  @default(60) @db.Decimal(10, 2)
+  packagingFeeUsd     Decimal  @default(2) @db.Decimal(10, 2)
+  kesAdjustment       Decimal  @default(4) @db.Decimal(10, 2)
+  updatedAt           DateTime @updatedAt
+
+  @@map("pricing_settings")
+}
+
 model ExchangeRate {
   id             String   @id @default(cuid())
   baseCurrency   String   @default("USD")

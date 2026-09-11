@@ -58,6 +58,19 @@ async function main() {
     },
   });
 
+  const beckyHair = await db.supplier.upsert({
+    where: { id: "seed-supplier-becky" },
+    update: {},
+    create: {
+      id: "seed-supplier-becky",
+      name: "Becky Hair",
+      country: "Vietnam",
+      email: "becky@hiarbusiness.example.com",
+      whatsappNumber: "+84900000003",
+      defaultMarginPct: 10,
+    },
+  });
+
   const supplierB = await db.supplier.upsert({
     where: { id: "seed-supplier-b" },
     update: {},
@@ -84,6 +97,54 @@ async function main() {
   });
 
   const products = [
+    {
+      slug: "becky-natural-straight-20",
+      name: "Becky Natural Straight 20 inch",
+      categoryId: bundlesCategory.id,
+      supplierId: beckyHair.id,
+      description: "100% natural straight Vietnamese human hair with a soft, silky finish.",
+      hairLength: "20 inches",
+      texture: "Straight",
+      color: "Natural black",
+      quality: "Double drawn",
+      accessoryType: "Bundle",
+      countryOfOrigin: "Vietnam",
+      basePriceUsd: 260,
+      baseWeightGrams: 300,
+      status: "published",
+    },
+    {
+      slug: "becky-body-wave-24",
+      name: "Becky Body Wave 24 inch",
+      categoryId: wigsCategory.id,
+      supplierId: beckyHair.id,
+      description: "Full-bodied body wave hair with natural movement and long-lasting curl memory.",
+      hairLength: "24 inches",
+      texture: "Body wave",
+      color: "Natural brown",
+      quality: "Premium virgin hair",
+      accessoryType: "Lace frontal",
+      countryOfOrigin: "Vietnam",
+      basePriceUsd: 310,
+      baseWeightGrams: 350,
+      status: "published",
+    },
+    {
+      slug: "becky-deep-wave-18",
+      name: "Becky Deep Wave 18 inch",
+      categoryId: wigsCategory.id,
+      supplierId: beckyHair.id,
+      description: "Defined deep wave texture for a rich, glamorous finish.",
+      hairLength: "18 inches",
+      texture: "Deep wave",
+      color: "Off black",
+      quality: "Raw hair",
+      accessoryType: "Closure",
+      countryOfOrigin: "Vietnam",
+      basePriceUsd: 220,
+      baseWeightGrams: 250,
+      status: "published",
+    },
     {
       slug: "luxury-body-wave-wig",
       name: "Luxury Body Wave Human Hair Wig",
@@ -180,6 +241,12 @@ async function main() {
       estimatedDaysMin: 3,
       estimatedDaysMax: 7,
     },
+  });
+
+  await db.pricingSetting.upsert({
+    where: { id: "global" },
+    update: { commissionPct: 10, shippingPerKgUsd: 60, packagingFeeUsd: 2, kesAdjustment: 4 },
+    create: { id: "global", commissionPct: 10, shippingPerKgUsd: 60, packagingFeeUsd: 2, kesAdjustment: 4 },
   });
 
   await db.exchangeRate.upsert({

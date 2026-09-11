@@ -17,6 +17,6 @@ export async function getUsdToKesRate(): Promise<number> {
   return rate.rate.toNumber();
 }
 
-export function convertUsdToKes(amountUsd: number, rate: number): number {
-  return Math.round(amountUsd * rate * 100) / 100;
+export function convertUsdToKes(amountUsd: number, rate: number, adjustment = 4): number {
+  return Math.round(amountUsd * (rate + adjustment) * 100) / 100;
 }
