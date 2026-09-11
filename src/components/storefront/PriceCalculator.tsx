@@ -48,14 +48,11 @@ export function PriceCalculator({
   const [countryCode, setCountryCode] = useState(countries[0]?.code ?? "US");
   const [discountCode, setDiscountCode] = useState("");
   const [breakdown, setBreakdown] = useState<PriceBreakdown | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError(null);
-
     fetch("/api/pricing/calculate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
