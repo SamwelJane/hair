@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import type { CartItem } from "@/lib/cart/types";
 
 const STORAGE_KEY = "hiar-business-cart";
@@ -20,20 +20,25 @@ function sameLine(a: CartItem, productId: string, variantId?: string) {
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    if (typeof window === "undefined") return [];
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
-
-  const loaded = true;
+  const [items, setItems] = useState<CartItem[]>([]);
+  const loaded = useRef(false);
 
   useEffect(() => {
-    if (!loaded) return;
+    const loadCart = window.setTimeout(() => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) setItems(JSON.parse(raw));
+      } catch {
+        // storage unavailable or malformed, keep an empty cart
+      } finally {
+        loaded.current = true;
+      }
+    }, 0);
+    return () => window.clearTimeout(loadCart);
+  }, []);
+
+  useEffect(() => {
+    if (!loaded.current) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
