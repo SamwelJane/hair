@@ -20,18 +20,17 @@ function sameLine(a: CartItem, productId: string, variantId?: string) {
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === "undefined") return [];
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setItems(JSON.parse(raw));
+      return raw ? JSON.parse(raw) : [];
     } catch {
-      // ignore malformed/unavailable storage
+      return [];
     }
-    setLoaded(true);
-  }, []);
+  });
+
+  const loaded = true;
 
   useEffect(() => {
     if (!loaded) return;

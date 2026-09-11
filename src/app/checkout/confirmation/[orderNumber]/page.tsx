@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/storefront/SiteHeader";
 import { SiteFooter } from "@/components/storefront/SiteFooter";
@@ -67,9 +68,9 @@ export default async function OrderConfirmationPage({
 
         <p className="mt-6 text-xs text-brand-muted">
           Track this order any time from your{" "}
-          <a href="/account/orders" className="text-brand-accent underline">
+          <Link href="/account/orders" className="text-brand-accent underline">
             account page
-          </a>
+          </Link>
           .
         </p>
       </main>
