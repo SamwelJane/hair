@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/notify-supplier-queue",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}

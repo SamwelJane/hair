@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fbf7f2;
+  --foreground: #2a211c;
+}
+
+@theme {
+  /* Storefront brand palette - warm, light. Used on every customer-facing page. */
+  --color-brand-bg: #fbf7f2;
+  --color-brand-surface: #ffffff;
+  --color-brand-ink: #2a211c;
+  --color-brand-muted: #8a7b6e;
+  --color-brand-border: #ece3d8;
+  --color-brand-accent: #b5651d;
+  --color-brand-accent-hover: #9c5417;
+  --color-brand-accent-soft: #f4e6d8;
+  --color-brand-dark: #211a16;
+  --color-brand-dark-ink: #f5ede4;
+  --color-brand-star: #d8a13a;
+  --color-brand-danger: #c0392b;
+  --color-brand-success: #2f7a3f;
+
+  /* Admin/staff dashboard palette - deliberately distinct from the storefront
+     brand so the internal tool never reads as "the same app" as the shop. */
+  --color-admin-bg: #14161a;
+  --color-admin-surface: #1d2025;
+  --color-admin-surface-2: #24272d;
+  --color-admin-border: #2e3238;
+  --color-admin-ink: #f2f3f5;
+  --color-admin-muted: #9aa0aa;
+  --color-admin-accent: #3987e5;
+  --color-admin-accent-ink: #ffffff;
+  --color-admin-good: #0ca30c;
+  --color-admin-good-soft: #123318;
+  --color-admin-warning: #fab219;
+  --color-admin-warning-soft: #332a10;
+  --color-admin-critical: #e66767;
+  --color-admin-critical-soft: #331515;
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}

@@ -1,0 +1,85 @@
+"use client";
+
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import type { CartItem } from "@/lib/cart/types";
+
+const STORAGE_KEY = "hiar-business-cart";
+
+interface CartContextValue {
+  items: CartItem[];
+  addItem: (item: CartItem) => void;
+  removeItem: (productId: string, variantId?: string) => void;
+  updateQuantity: (productId: string, variantId: string | undefined, quantity: number) => void;
+  clear: () => void;
+}
+
+const CartContext = createContext<CartContextValue | null>(null);
+
+function sameLine(a: CartItem, productId: string, variantId?: string) {
+  return a.productId === productId && a.variantId === variantId;
+}
+
+export function CartProvider({ children }: { children: React.ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setItems(JSON.parse(raw));
+    } catch {
+      // ignore malformed/unavailable storage
+    }
+    setLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      // storage unavailable, ignore
+    }
+  }, [items, loaded]);
+
+  const addItem = useCallback((item: CartItem) => {
+    setItems((prev) => {
+      const existing = prev.find((p) => sameLine(p, item.productId, item.variantId));
+      if (existing) {
+        return prev.map((p) =>
+          sameLine(p, item.productId, item.variantId)
+            ? { ...p, quantity: p.quantity + item.quantity }
+            : p
+        );
+      }
+      return [...prev, item];
+    });
+  }, []);
+
+  const removeItem = useCallback((productId: string, variantId?: string) => {
+    setItems((prev) => prev.filter((p) => !sameLine(p, productId, variantId)));
+  }, []);
+
+  const updateQuantity = useCallback(
+    (productId: string, variantId: string | undefined, quantity: number) => {
+      setItems((prev) =>
+        prev.map((p) => (sameLine(p, productId, variantId) ? { ...p, quantity } : p))
+      );
+    },
+    []
+  );
+
+  const clear = useCallback(() => setItems([]), []);
+
+  return (
+    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clear }}>
+      {children}
+    </CartContext.Provider>
+  );
+}
+
+export function useCart(): CartContextValue {
+  const ctx = useContext(CartContext);
+  if (!ctx) throw new Error("useCart must be used within CartProvider");
+  return ctx;
+}
