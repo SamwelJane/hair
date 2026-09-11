@@ -24,6 +24,11 @@ async function createProduct(formData: FormData) {
       categoryId: formData.get("categoryId") as string,
       supplierId: formData.get("supplierId") as string,
       description: formData.get("description") as string,
+      hairLength: formData.get("hairLength") as string,
+      texture: formData.get("texture") as string,
+      color: formData.get("color") as string,
+      quality: formData.get("quality") as string,
+      accessoryType: formData.get("accessoryType") as string,
       countryOfOrigin: formData.get("countryOfOrigin") as string,
       processingTimeDays: Number(formData.get("processingTimeDays") ?? 7),
       basePriceUsd: Number(formData.get("basePriceUsd")),
@@ -72,7 +77,14 @@ export default async function NewProductPage() {
             </option>
           ))}
         </select>
-        <input name="countryOfOrigin" placeholder="Country of origin" required className={fieldClass} />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <input name="hairLength" placeholder="Hair length (e.g. 24 inches)" className={fieldClass} />
+          <input name="texture" placeholder="Texture (e.g. body wave)" className={fieldClass} />
+          <input name="color" placeholder="Color" className={fieldClass} />
+          <input name="quality" placeholder="Quality / grade" className={fieldClass} />
+          <input name="accessoryType" placeholder="Accessory type" className={fieldClass} />
+          <input name="countryOfOrigin" placeholder="Country of origin" required className={fieldClass} />
+        </div>
         <input
           name="processingTimeDays"
           type="number"

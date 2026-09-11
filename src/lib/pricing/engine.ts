@@ -20,6 +20,9 @@ export interface CalculatePriceInput {
   totalWeightGrams: number;
   shippingRule: Pick<CountryShippingRule, "baseFeeUsd" | "perKgFeeUsd" | "customsRatePct">;
   handlingFeeUsd?: number;
+  commissionPct?: number;
+  shippingPerKgUsd?: number;
+  packagingFeeUsd?: number;
   discountCode?: Pick<DiscountCode, "type" | "value" | "minOrderUsd"> | null;
 }
 
@@ -41,8 +44,9 @@ export function calculatePrice(input: CalculatePriceInput): PriceBreakdown {
   const customsRatePct = toNumber(input.shippingRule.customsRatePct);
 
   const weightKg = input.totalWeightGrams / 1000;
-  const shippingFeeUsd = round2(baseFee + perKgFee * weightKg);
-  const handlingFeeUsd = round2(input.handlingFeeUsd ?? 0);
+  const shippingFeeUsd = round2(baseFee + (input.shippingPerKgUsd ?? perKgFee) * weightKg + (input.packagingFeeUsd ?? 0));
+  const commissionUsd = round2(subtotalUsd * ((input.commissionPct ?? 0) / 100));
+  const handlingFeeUsd = round2((input.handlingFeeUsd ?? 0) + commissionUsd);
   const customsEstimateUsd = round2(subtotalUsd * (customsRatePct / 100));
 
   let discountUsd = 0;

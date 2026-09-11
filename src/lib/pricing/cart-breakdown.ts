@@ -46,10 +46,15 @@ export async function calculateCartBreakdown(
     throw new Error(`No shipping rule configured for country ${countryCode}`);
   }
 
+  const settings = await db.pricingSetting.upsert({ where: { id: "global" }, update: {}, create: {} });
+
   const breakdown = calculatePrice({
     items: resolvedLines.map((l) => ({ unitPriceUsd: l.unitPriceUsd, quantity: l.quantity })),
     totalWeightGrams: resolvedLines.reduce((sum, l) => sum + l.weightGrams, 0),
     shippingRule,
+    shippingPerKgUsd: settings.shippingPerKgUsd.toNumber(),
+    packagingFeeUsd: settings.packagingFeeUsd.toNumber(),
+    commissionPct: settings.commissionPct.toNumber(),
     discountCode: discount,
   });
 
