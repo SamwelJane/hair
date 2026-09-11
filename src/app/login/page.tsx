@@ -23,9 +23,9 @@ async function authenticate(formData: FormData) {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; callbackUrl?: string }>;
+  searchParams: Promise<{ error?: string; callbackUrl?: string; registered?: string; reset?: string }>;
 }) {
-  const { error, callbackUrl } = await searchParams;
+  const { error, callbackUrl, registered, reset } = await searchParams;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-brand-bg px-6">
@@ -36,6 +36,8 @@ export default async function LoginPage({
           <p className="mt-4 text-sm text-brand-danger">Too many login attempts. Please wait a few minutes and try again.</p>
         )}
         {error === "invalid" && <p className="mt-4 text-sm text-brand-danger">Invalid email or password.</p>}
+        {registered === "1" && <p className="mt-4 text-sm text-brand-muted">Account created. You can now sign in.</p>}
+        {reset === "1" && <p className="mt-4 text-sm text-brand-muted">Password updated. You can now sign in.</p>}
         <form action={authenticate} className="mt-6 flex flex-col gap-3">
           <input type="hidden" name="callbackUrl" value={callbackUrl ?? "/"} />
           <input
@@ -56,6 +58,7 @@ export default async function LoginPage({
             Sign in
           </button>
         </form>
+        <div className="mt-5 flex justify-between text-sm"><a href="/forgot-password" className="text-brand-accent underline">Forgot password?</a><a href="/register" className="text-brand-accent underline">Create account</a></div>
       </div>
     </div>
   );

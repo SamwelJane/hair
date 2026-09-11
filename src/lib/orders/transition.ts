@@ -3,6 +3,7 @@ import type { OrderStatus } from "@/generated/prisma/client";
 import { assertValidTransition } from "./state-machine";
 import { enqueueNotifySupplier } from "@/lib/queue/jobs/notify-supplier";
 import { logAudit } from "@/lib/security/audit";
+import { sendWhatsApp, customerOrderStatusWhatsAppMessage } from "@/lib/notifications/whatsapp";
 
 export async function transitionOrderStatus(
   orderId: string,
@@ -12,7 +13,7 @@ export async function transitionOrderStatus(
 ): Promise<void> {
   const order = await db.order.findUniqueOrThrow({
     where: { id: orderId },
-    include: { items: { include: { product: true } } },
+    include: { items: { include: { product: true } }, user: { select: { phone: true } }, shipment: { select: { trackingNumber: true } } },
   });
 
   assertValidTransition(order.status, toStatus);
@@ -39,6 +40,13 @@ export async function transitionOrderStatus(
     for (const so of supplierOrders) {
       await enqueueNotifySupplier(so.id);
     }
+  }
+
+  if (order.user.phone) {
+    await sendWhatsApp({
+      to: order.user.phone,
+      body: customerOrderStatusWhatsAppMessage({ orderNumber: order.orderNumber, status: toStatus, trackingNumber: order.shipment?.trackingNumber }),
+    });
   }
 
   await logAudit({

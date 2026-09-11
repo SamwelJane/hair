@@ -20,10 +20,15 @@ export async function sendWhatsApp(input: SendWhatsAppInput): Promise<void> {
   }
 
   await client.messages.create({
-    from: process.env.TWILIO_WHATSAPP_FROM,
+    from: process.env.TWILIO_WHATSAPP_FROM ?? "whatsapp:+254712197226",
     to: `whatsapp:${input.to}`,
     body: input.body,
   });
+}
+
+export function customerOrderStatusWhatsAppMessage(params: { orderNumber: string; status: string; trackingNumber?: string }): string {
+  const tracking = params.trackingNumber ? ` Tracking number: ${params.trackingNumber}.` : "";
+  return `Hiar Business update: order ${params.orderNumber} is now ${params.status.replaceAll("_", " ").toLowerCase()}.${tracking}`;
 }
 
 export function supplierOrderWhatsAppMessage(params: {
