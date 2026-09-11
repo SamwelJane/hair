@@ -5,6 +5,7 @@ import type { NextAuthConfig } from "next-auth";
 // those live in the Credentials provider defined in auth.ts instead, which
 // is only ever used from route handlers / server components (Node runtime).
 export const authConfig = {
+  secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
   pages: { signIn: "/login" },
   session: { strategy: "jwt" },
   providers: [],
