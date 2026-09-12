@@ -21,7 +21,8 @@ export async function POST(request: Request) {
   const existing = await db.user.findUnique({ where: { email: parsed.data.email } });
   if (existing) return NextResponse.json({ error: "Unable to create this account." }, { status: 400 });
 
-  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
-  await db.user.create({ data: { ...parsed.data, passwordHash } });
+  const { password, ...userData } = parsed.data;
+  const passwordHash = await bcrypt.hash(password, 12);
+  await db.user.create({ data: { ...userData, passwordHash } });
   return NextResponse.json({ ok: true }, { status: 201 });
 }
