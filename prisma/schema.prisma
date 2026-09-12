@@ -1,0 +1,387 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Identity / Access ----------
+
+enum UserRole {
+  ADMIN
+  STAFF
+  SUPPLIER
+  CUSTOMER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  role          UserRole  @default(CUSTOMER)
+  phone         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  orders           Order[]
+  reviews          Review[]
+  auditLogs        AuditLog[]
+  statusChanges    OrderStatusHistory[] @relation("StatusChangedBy")
+  confirmedPayments Payment[]           @relation("PaymentConfirmedBy")
+  shipmentMilestones ShipmentMilestone[] @relation("MilestoneCreatedBy")
+  exchangeRateUpdates ExchangeRate[]    @relation("ExchangeRateUpdatedBy")
+
+  @@map("users")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+// ---------- Catalog ----------
+
+model Category {
+  id       String     @id @default(cuid())
+  name     String
+  slug     String     @unique
+  parentId String?
+  parent   Category?  @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryToCategory")
+  products Product[]
+
+  @@map("categories")
+}
+
+model Supplier {
+  id                String   @id @default(cuid())
+  name              String
+  country           String
+  email             String
+  whatsappNumber    String
+  defaultMarginPct  Decimal  @default(0) @db.Decimal(5, 2)
+  status            String   @default("active") // active | inactive
+  createdAt         DateTime @default(now())
+
+  products       Product[]
+  supplierOrders SupplierOrder[]
+
+  @@map("suppliers")
+}
+
+model Product {
+  id                 String   @id @default(cuid())
+  name               String
+  slug               String   @unique
+  categoryId         String
+  category           Category @relation(fields: [categoryId], references: [id])
+  supplierId         String
+  supplier           Supplier @relation(fields: [supplierId], references: [id])
+  description        String
+  hairLength         String?
+  texture            String?
+  color              String?
+  quality            String?
+  accessoryType      String?
+  countryOfOrigin    String
+  processingTimeDays Int      @default(7)
+  basePriceUsd       Decimal  @db.Decimal(10, 2)
+  baseWeightGrams    Int      @default(200)
+  status             String   @default("draft") // draft | published
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  variants   ProductVariant[]
+  images     ProductImage[]
+  reviews    Review[]
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id                String  @id @default(cuid())
+  productId         String
+  product           Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  length            String?
+  density           String?
+  texture           String?
+  color             String?
+  sku               String  @unique
+  priceDeltaUsd     Decimal @default(0) @db.Decimal(10, 2)
+  stockQty          Int     @default(0)
+  weightOverrideGrams Int?
+
+  images     ProductImage[]
+  orderItems OrderItem[]
+
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id        String          @id @default(cuid())
+  productId String
+  product   Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId String?
+  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  url       String
+  altText   String?
+  sortOrder Int             @default(0)
+
+  @@map("product_images")
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  orderId   String?
+  order     Order?   @relation(fields: [orderId], references: [id])
+  rating    Int
+  body      String
+  status    String   @default("pending") // pending | approved | rejected
+  createdAt DateTime @default(now())
+
+  @@map("reviews")
+}
+
+// ---------- Pricing ----------
+
+model DiscountCode {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  type          String    // percent | fixed
+  value         Decimal   @db.Decimal(10, 2)
+  minOrderUsd   Decimal?  @db.Decimal(10, 2)
+  usageLimit    Int?
+  timesUsed     Int       @default(0)
+  expiresAt     DateTime?
+  active        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+
+  orders Order[]
+
+  @@map("discount_codes")
+}
+
+model CountryShippingRule {
+  id                String  @id @default(cuid())
+  countryCode       String  @unique
+  countryName       String
+  baseFeeUsd        Decimal @db.Decimal(10, 2)
+  perKgFeeUsd       Decimal @db.Decimal(10, 2)
+  customsRatePct    Decimal @default(0) @db.Decimal(5, 2)
+  estimatedDaysMin  Int
+  estimatedDaysMax  Int
+
+  @@map("country_shipping_rules")
+}
+
+// Admin-set manual USD -> KES conversion rate. Single current-rate row per pair;
+// history of who changed it and when is captured via AuditLog.
+model PricingSetting {
+  id                  String   @id @default("global")
+  commissionPct       Decimal  @default(10) @db.Decimal(5, 2)
+  shippingPerKgUsd    Decimal  @default(60) @db.Decimal(10, 2)
+  packagingFeeUsd     Decimal  @default(2) @db.Decimal(10, 2)
+  kesAdjustment       Decimal  @default(4) @db.Decimal(10, 2)
+  updatedAt           DateTime @updatedAt
+
+  @@map("pricing_settings")
+}
+
+model ExchangeRate {
+  id             String   @id @default(cuid())
+  baseCurrency   String   @default("USD")
+  targetCurrency String   @default("KES")
+  rate           Decimal  @db.Decimal(12, 4)
+  updatedById    String
+  updatedBy      User     @relation("ExchangeRateUpdatedBy", fields: [updatedById], references: [id])
+  updatedAt      DateTime @updatedAt
+
+  @@unique([baseCurrency, targetCurrency])
+  @@map("exchange_rates")
+}
+
+// ---------- Orders ----------
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PAID
+  SENT_TO_SUPPLIER
+  SUPPLIER_PROCESSING
+  READY_FOR_PICKUP
+  RECEIVED_AT_OFFICE
+  SHIPPED_INTERNATIONALLY
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+model Order {
+  id                 String      @id @default(cuid())
+  orderNumber        String      @unique
+  userId             String
+  user               User        @relation(fields: [userId], references: [id])
+  status             OrderStatus @default(PENDING_PAYMENT)
+  currency           String      @default("USD")
+  subtotalUsd        Decimal     @db.Decimal(10, 2)
+  shippingFeeUsd     Decimal     @db.Decimal(10, 2)
+  handlingFeeUsd     Decimal     @default(0) @db.Decimal(10, 2)
+  customsEstimateUsd Decimal     @default(0) @db.Decimal(10, 2)
+  discountCodeId     String?
+  discountCode       DiscountCode? @relation(fields: [discountCodeId], references: [id])
+  totalAmountUsd     Decimal     @db.Decimal(10, 2)
+  exchangeRateApplied Decimal?   @db.Decimal(12, 4)
+  totalAmountKes     Decimal?    @db.Decimal(12, 2)
+  shippingCountry    String
+  shippingAddress    Json
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  items          OrderItem[]
+  statusHistory  OrderStatusHistory[]
+  payments       Payment[]
+  supplierOrders SupplierOrder[]
+  shipment       Shipment?
+  reviews        Review[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id                String          @id @default(cuid())
+  orderId           String
+  order             Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId         String
+  product           Product         @relation(fields: [productId], references: [id])
+  variantId         String?
+  variant           ProductVariant? @relation(fields: [variantId], references: [id])
+  quantity          Int
+  unitPriceUsdAtPurchase Decimal    @db.Decimal(10, 2)
+  lineTotalUsd      Decimal         @db.Decimal(10, 2)
+
+  @@map("order_items")
+}
+
+model OrderStatusHistory {
+  id            String      @id @default(cuid())
+  orderId       String
+  order         Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  fromStatus    OrderStatus?
+  toStatus      OrderStatus
+  changedById   String?
+  changedBy     User?       @relation("StatusChangedBy", fields: [changedById], references: [id])
+  note          String?
+  createdAt     DateTime    @default(now())
+
+  @@map("order_status_history")
+}
+
+enum PaymentProviderType {
+  MPESA
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  INITIATED
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model Payment {
+  id                  String              @id @default(cuid())
+  orderId             String
+  order               Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  provider            PaymentProviderType
+  providerRef         String?
+  amountKes           Decimal             @db.Decimal(12, 2)
+  status              PaymentStatus       @default(INITIATED)
+  rawCallbackPayload  Json?
+  proofOfPaymentUrl   String?
+  confirmedById       String?
+  confirmedBy         User?               @relation("PaymentConfirmedBy", fields: [confirmedById], references: [id])
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@map("payments")
+}
+
+enum SupplierOrderStatus {
+  SENT
+  ACKNOWLEDGED
+  IN_PRODUCTION
+  READY
+}
+
+model SupplierOrder {
+  id          String              @id @default(cuid())
+  orderId     String
+  order       Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  supplierId  String
+  supplier    Supplier            @relation(fields: [supplierId], references: [id])
+  status      SupplierOrderStatus @default(SENT)
+  sentAt      DateTime            @default(now())
+  confirmedAt DateTime?
+
+  @@map("supplier_orders")
+}
+
+// ---------- Shipping ----------
+
+model Shipment {
+  id                   String   @id @default(cuid())
+  orderId              String   @unique
+  order                Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  trackingNumber       String   @unique
+  carrier              String?
+  originOfficeLocation String?
+  status               String   @default("preparing")
+  createdAt            DateTime @default(now())
+
+  milestones ShipmentMilestone[]
+
+  @@map("shipments")
+}
+
+model ShipmentMilestone {
+  id             String   @id @default(cuid())
+  shipmentId     String
+  shipment       Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  label          String
+  location       String?
+  note           String?
+  carrierEventId String?
+  createdById    String?
+  createdBy      User?    @relation("MilestoneCreatedBy", fields: [createdById], references: [id])
+  occurredAt     DateTime @default(now())
+
+  @@map("shipment_milestones")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId, expiresAt])
+  @@map("password_reset_tokens")
+}
