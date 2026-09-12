@@ -18,12 +18,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       authorize: async (credentials, request) => {
-        const email = credentials?.email as string | undefined;
-        const password = credentials?.password as string | undefined;
+        const email = typeof credentials?.email === "string" ? credentials.email.trim().toLowerCase() : undefined;
+        const password = typeof credentials?.password === "string" ? credentials.password : undefined;
         if (!email || !password) return null;
 
         const ip = getClientIp(request);
-        const { allowed } = await rateLimit(`login:${email.toLowerCase()}:${ip}`, 5, 15 * 60);
+        const { allowed } = await rateLimit(`login:${email}:${ip}`, 5, 15 * 60);
         if (!allowed) {
           throw new RateLimitedError();
         }

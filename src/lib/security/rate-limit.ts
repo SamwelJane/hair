@@ -17,21 +17,29 @@ export async function rateLimit(
   limit: number,
   windowSeconds: number
 ): Promise<RateLimitResult> {
-  const redisKey = `ratelimit:${key}`;
-  const count = await redis.incr(redisKey);
-
-  if (count === 1) {
-    await redis.expire(redisKey, windowSeconds);
+  if (!process.env.REDIS_URL) {
+    return { allowed: true, remaining: limit, retryAfterSeconds: 0 };
   }
 
-  const ttl = await redis.ttl(redisKey);
-  const retryAfterSeconds = ttl > 0 ? ttl : windowSeconds;
+  try {
+    const redisKey = `ratelimit:${key}`;
+    const count = await redis.incr(redisKey);
 
-  return {
-    allowed: count <= limit,
-    remaining: Math.max(0, limit - count),
-    retryAfterSeconds,
-  };
+    if (count === 1) {
+      await redis.expire(redisKey, windowSeconds);
+    }
+
+    const ttl = await redis.ttl(redisKey);
+    const retryAfterSeconds = ttl > 0 ? ttl : windowSeconds;
+
+    return {
+      allowed: count <= limit,
+      remaining: Math.max(0, limit - count),
+      retryAfterSeconds,
+    };
+  } catch {
+    return { allowed: true, remaining: limit, retryAfterSeconds: 0 };
+  }
 }
 
 export function getClientIp(request: Request): string {
