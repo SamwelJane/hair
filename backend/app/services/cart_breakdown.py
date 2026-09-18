@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.catalog import Product, ProductVariant
+from app.models.enums import StockType
 from app.models.pricing import CountryShippingRule, DiscountCode
 from app.services.pricing_engine import (
     CalculatePriceInput,
@@ -42,6 +43,7 @@ class ResolvedCartLine:
     weight_grams: int
     margin_pct: Decimal
     variant_id: uuid.UUID | None = None
+    stock_type: StockType = StockType.MADE_TO_ORDER
 
 
 @dataclass
@@ -84,6 +86,7 @@ async def resolve_cart_lines(
                 unit_price_usd=Decimal(unit_price_usd),
                 weight_grams=weight_per_unit * item.quantity,
                 margin_pct=Decimal(margin_pct),
+                stock_type=product.stock_type or StockType.MADE_TO_ORDER,
             )
         )
 

@@ -20,6 +20,7 @@ import { AddressesPage } from "../features/account/AddressesPage";
 import { SupplierOrdersPage } from "../features/supplier/OrdersPage";
 import { SupplierProductsPage } from "../features/supplier/ProductsPage";
 import { SupplierProductFormPage } from "../features/supplier/ProductFormPage";
+import { SupplierPromotionsPage } from "../features/supplier/PromotionsPage";
 import { AdminDashboardPage } from "../features/admin/DashboardPage";
 import { AdminOrdersPage } from "../features/admin/OrdersPage";
 import { AdminOrderDetailPage } from "../features/admin/OrderDetailPage";
@@ -40,6 +41,7 @@ import { AdminExchangeRatePage } from "../features/admin/settings/ExchangeRatePa
 import { AdminPricingSettingsPage } from "../features/admin/settings/PricingSettingsPage";
 import { AdminShippingRulesPage } from "../features/admin/settings/ShippingRulesPage";
 import { AdminDiscountCodesPage } from "../features/admin/settings/DiscountCodesPage";
+import { AdminPromotionsPage } from "../features/admin/PromotionsPage";
 import { WarehouseDashboardPage } from "../features/warehouse/DashboardPage";
 import { ReceivePackagePage } from "../features/warehouse/ReceivePackagePage";
 import { ExternalShipmentFormPage } from "../features/warehouse/ExternalShipmentFormPage";
@@ -86,6 +88,7 @@ export const router = createBrowserRouter([
       { path: "products", element: <SupplierProductsPage /> },
       { path: "products/new", element: <SupplierProductFormPage /> },
       { path: "products/:productId", element: <SupplierProductFormPage /> },
+      { path: "promotions", element: <SupplierPromotionsPage /> },
     ],
   },
   {
@@ -103,6 +106,7 @@ export const router = createBrowserRouter([
       { path: "homepage/products", element: <AdminHomepageProductPlacementsPage /> },
       { path: "suppliers", element: <AdminSuppliersPage /> },
       { path: "suppliers/:supplierId", element: <AdminSupplierDetailPage /> },
+      { path: "promotions", element: <AdminPromotionsPage /> },
       { path: "returns", element: <AdminReturnsPage /> },
       { path: "reviews", element: <AdminReviewsPage /> },
       { path: "payments", element: <AdminPaymentsPage /> },

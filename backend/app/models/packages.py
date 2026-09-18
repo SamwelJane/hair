@@ -51,6 +51,7 @@ class Package(Base, UUIDPrimaryKeyMixin, CreatedAtMixin):
     )
 
     weight_grams: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    weight_kg: Mapped[Decimal | None] = mapped_column(Numeric(8, 3), nullable=True)
     length_cm: Mapped[Decimal | None] = mapped_column(Numeric(8, 2), nullable=True)
     width_cm: Mapped[Decimal | None] = mapped_column(Numeric(8, 2), nullable=True)
     height_cm: Mapped[Decimal | None] = mapped_column(Numeric(8, 2), nullable=True)

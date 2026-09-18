@@ -41,51 +41,46 @@ class PriceBreakdown:
     discount_usd: Decimal
     total_amount_usd: Decimal
     total_weight_grams: int
+    supplier_subtotal_usd: Decimal = Decimal(0)
+    platform_margin_usd: Decimal = Decimal(0)
+    packaging_fee_usd: Decimal = Decimal(2)
 
 
 @dataclass
 class CalculatePriceInput:
     items: list[PriceLineItem]
     total_weight_grams: int
-    shipping_rule: ShippingRuleInput
+    shipping_rule: ShippingRuleInput | None = None
     handling_fee_usd: Decimal = Decimal(0)
-    commission_pct: Decimal | None = None
-    shipping_per_kg_usd: Decimal | None = None
-    packaging_fee_usd: Decimal | None = None
+    commission_pct: Decimal | None = Decimal(15)  # 15% platform markup by default
+    shipping_per_kg_usd: Decimal | None = Decimal(60)  # $60/kg flat air freight & customs
+    packaging_fee_usd: Decimal | None = Decimal(2)  # $2 flat packaging per order
     discount_code: DiscountCodeInput | None = None
 
 
 def calculate_price(input: CalculatePriceInput) -> PriceBreakdown:
-    """Direct port of src/lib/pricing/engine.ts calculatePrice().
-
-    Total = (unit price * qty) + shipping + handling + customs - discount.
-    Shipping = baseFee + perKgFee * weight; customs = customsRatePct% of subtotal.
-    Handling's commission is computed per-line (each line's supplier margin,
-    falling back to the platform default commission_pct), then summed - not
-    one flat percentage of the whole subtotal - so different suppliers'
-    margins actually affect what the customer pays, not just internal
-    reporting.
+    """Calculates all-inclusive landed cost:
+    - Product storefront price = supplier price * 1.15 (15% platform markup)
+    - Weight: total_weight_grams / 1000 = weight_kg
+    - Shipping fee = weight_kg * $60/kg + $2 packaging fee
+    - Customs estimate = 0 (all-inclusive flat freight & customs rate)
+    - Platform margin = 15% markup + $2 packaging fee
     """
-    subtotal_usd = _round2(sum((item.unit_price_usd * item.quantity for item in input.items), Decimal(0)))
+    supplier_subtotal = _round2(sum((item.unit_price_usd * item.quantity for item in input.items), Decimal(0)))
 
+    # Apply 15% platform markup if not already marked up
+    markup_pct = input.commission_pct if input.commission_pct is not None else Decimal(15)
+    markup_multiplier = Decimal(1) + (markup_pct / Decimal(100))
+    subtotal_usd = _round2(supplier_subtotal * markup_multiplier)
+
+    # Shipping at $60/kg + $2 packaging fee
     weight_kg = Decimal(input.total_weight_grams) / Decimal(1000)
-    per_kg_fee = input.shipping_per_kg_usd if input.shipping_per_kg_usd is not None else input.shipping_rule.per_kg_fee_usd
-    packaging_fee = input.packaging_fee_usd if input.packaging_fee_usd is not None else Decimal(0)
-    shipping_fee_usd = _round2(input.shipping_rule.base_fee_usd + per_kg_fee * weight_kg + packaging_fee)
+    per_kg_rate = input.shipping_per_kg_usd if input.shipping_per_kg_usd is not None else Decimal(60)
+    packaging_fee = input.packaging_fee_usd if input.packaging_fee_usd is not None else Decimal(2)
+    shipping_fee_usd = _round2(per_kg_rate * weight_kg + packaging_fee)
 
-    commission_usd = _round2(
-        sum(
-            (
-                item.unit_price_usd
-                * item.quantity
-                * ((item.margin_pct if item.margin_pct is not None else (input.commission_pct or Decimal(0))) / Decimal(100))
-                for item in input.items
-            ),
-            Decimal(0),
-        )
-    )
-    handling_fee_usd = _round2(input.handling_fee_usd + commission_usd)
-    customs_estimate_usd = _round2(subtotal_usd * (input.shipping_rule.customs_rate_pct / Decimal(100)))
+    customs_estimate_usd = Decimal(0)
+    handling_fee_usd = Decimal(0)
 
     discount_usd = Decimal(0)
     if input.discount_code is not None:
@@ -99,9 +94,11 @@ def calculate_price(input: CalculatePriceInput) -> PriceBreakdown:
     total_amount_usd = _round2(
         max(
             Decimal(0),
-            subtotal_usd + shipping_fee_usd + handling_fee_usd + customs_estimate_usd - discount_usd,
+            subtotal_usd + shipping_fee_usd - discount_usd,
         )
     )
+
+    platform_margin_usd = _round2((subtotal_usd - supplier_subtotal) + packaging_fee)
 
     return PriceBreakdown(
         subtotal_usd=subtotal_usd,
@@ -111,4 +108,7 @@ def calculate_price(input: CalculatePriceInput) -> PriceBreakdown:
         discount_usd=discount_usd,
         total_amount_usd=total_amount_usd,
         total_weight_grams=input.total_weight_grams,
+        supplier_subtotal_usd=supplier_subtotal,
+        platform_margin_usd=platform_margin_usd,
+        packaging_fee_usd=packaging_fee,
     )

@@ -71,7 +71,7 @@ export function PackageDetailPage() {
       <p>Tracking number: <strong>{pkg.tracking_number}</strong></p>
       <p className="muted">
         QC: {pkg.qc_status} {pkg.condition ? `· Condition: ${pkg.condition}` : ""} {pkg.weight_grams != null ? `· ${pkg.weight_grams} g` : ""}
-        {pkg.volume_cbm ? ` · ${pkg.volume_cbm} m³` : ""}
+        {pkg.weight_kg != null ? ` · ${pkg.weight_kg} kg` : ""}
       </p>
       {pkg.notes && <p className="muted">Notes: {pkg.notes}</p>}
 

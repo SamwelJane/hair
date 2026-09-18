@@ -11,6 +11,7 @@ from app.models.enums import (
     DrawnType,
     HairCategory,
     ProductStatus,
+    StockType,
     TextureCategory,
     TipType,
     WigConstruction,
@@ -70,9 +71,15 @@ class Product(Base, UUIDPrimaryKeyMixin, CreatedAtMixin, UpdatedAtMixin):
     country_of_origin: Mapped[str] = mapped_column(String, nullable=False)
     processing_time_days: Mapped[int] = mapped_column(Integer, default=7, nullable=False)
     base_price_usd: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+    min_price_usd: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    max_price_usd: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    discount_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
     base_weight_grams: Mapped[int] = mapped_column(Integer, default=200, nullable=False)
     status: Mapped[ProductStatus] = mapped_column(
         Enum(ProductStatus, name="product_status"), default=ProductStatus.DRAFT, nullable=False
+    )
+    stock_type: Mapped[StockType] = mapped_column(
+        Enum(StockType, name="stock_type"), default=StockType.MADE_TO_ORDER, nullable=False
     )
 
     # Hair taxonomy, from the supplier catalogue's own classification:

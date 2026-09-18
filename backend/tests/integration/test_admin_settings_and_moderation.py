@@ -189,10 +189,10 @@ async def test_update_pricing_settings(client, admin_user, checkout_fixtures):
         headers=headers,
     )
     assert resp.status_code == 200
-    assert resp.json()["commission_pct"] == "8"
+    assert resp.json()["commission_pct"] == "8.00"
 
     get_resp = await client.get("/admin/settings/pricing", headers=headers)
-    assert get_resp.json()["shipping_per_kg_usd"] == "55"
+    assert get_resp.json()["shipping_per_kg_usd"] == "55.00"
 
 
 # ---------- Shipping rules (regular admin, NOT strict) ----------

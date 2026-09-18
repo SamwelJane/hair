@@ -24,6 +24,7 @@ from app.routers.admin import homepage as admin_homepage
 from app.routers.admin import orders as admin_orders
 from app.routers.admin import payments as admin_payments
 from app.routers.admin import products as admin_products
+from app.routers.admin import promotions as admin_promotions
 from app.routers.admin import returns as admin_returns
 from app.routers.admin import reviews as admin_reviews
 from app.routers.admin import settings as admin_settings
@@ -31,11 +32,13 @@ from app.routers.admin import suppliers as admin_suppliers
 from app.routers.admin import users as admin_users
 from app.routers.supplier import orders as supplier_orders
 from app.routers.supplier import products as supplier_products
+from app.routers.supplier import promotions as supplier_promotions
 from app.routers.warehouse import consolidations as warehouse_consolidations
 from app.routers.warehouse import customs as warehouse_customs
 from app.routers.warehouse import dashboard as warehouse_dashboard
 from app.routers.warehouse import external_shipments as warehouse_external_shipments
 from app.routers.warehouse import packages as warehouse_packages
+from app.routers.webhooks import whatsapp as webhook_whatsapp
 
 settings = get_settings()
 configure_logging()
@@ -76,11 +79,14 @@ app.include_router(admin_audit_logs.router)
 app.include_router(admin_analytics.router)
 app.include_router(supplier_orders.router)
 app.include_router(supplier_products.router)
+app.include_router(supplier_promotions.router)
+app.include_router(admin_promotions.router)
 app.include_router(warehouse_external_shipments.router)
 app.include_router(warehouse_packages.router)
 app.include_router(warehouse_consolidations.router)
 app.include_router(warehouse_customs.router)
 app.include_router(warehouse_dashboard.router)
+app.include_router(webhook_whatsapp.router)
 
 
 @app.get("/health")

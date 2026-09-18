@@ -52,6 +52,7 @@ class SupplierOrder(Base, UUIDPrimaryKeyMixin):
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     eta_days: Mapped[int | None] = mapped_column(Integer, nullable=True)
     decline_reason: Mapped[str | None] = mapped_column(String, nullable=True)
+    sub_order_number: Mapped[str | None] = mapped_column(String, unique=True, nullable=True, index=True)
 
     order: Mapped["Order"] = relationship(back_populates="supplier_orders")
     supplier: Mapped["Supplier"] = relationship()

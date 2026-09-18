@@ -1,8 +1,10 @@
+from decimal import Decimal
 import uuid
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.models.catalog import ProductVariant
 from app.models.enums import OrderStatus, SupplierOrderStatus
 from app.models.orders import Order, OrderItem, OrderStatusHistory
 from app.models.payments import SupplierOrder
@@ -21,8 +23,8 @@ TRANSITIONS: dict[OrderStatus, list[OrderStatus]] = {
     OrderStatus.PAID: [OrderStatus.SENT_TO_SUPPLIER, OrderStatus.CANCELLED],
     OrderStatus.SENT_TO_SUPPLIER: [OrderStatus.SUPPLIER_PROCESSING, OrderStatus.CANCELLED],
     OrderStatus.SUPPLIER_PROCESSING: [OrderStatus.READY_FOR_PICKUP, OrderStatus.CANCELLED],
-    OrderStatus.READY_FOR_PICKUP: [OrderStatus.RECEIVED_AT_OFFICE, OrderStatus.CANCELLED],
-    OrderStatus.RECEIVED_AT_OFFICE: [OrderStatus.SHIPPED_INTERNATIONALLY, OrderStatus.CANCELLED],
+    OrderStatus.READY_FOR_PICKUP: [OrderStatus.RECEIVED_AT_OFFICE],
+    OrderStatus.RECEIVED_AT_OFFICE: [OrderStatus.SHIPPED_INTERNATIONALLY],
     OrderStatus.SHIPPED_INTERNATIONALLY: [OrderStatus.IN_TRANSIT],
     OrderStatus.IN_TRANSIT: [OrderStatus.DELIVERED],
     OrderStatus.DELIVERED: [],
@@ -91,6 +93,7 @@ async def transition_order_status(
         populate_existing=True,
         options=[
             selectinload(Order.items).selectinload(OrderItem.product),
+            selectinload(Order.items).selectinload(OrderItem.variant),
             selectinload(Order.user),
             selectinload(Order.supplier_orders),
         ],
@@ -106,14 +109,40 @@ async def transition_order_status(
 
     new_supplier_order_ids: list[uuid.UUID] = []
     if to_status == OrderStatus.SENT_TO_SUPPLIER:
-        supplier_ids = {item.product.supplier_id for item in order.items}
-        for supplier_id in supplier_ids:
+        supplier_ids = sorted({item.product.supplier_id for item in order.items}, key=str)
+        for idx, supplier_id in enumerate(supplier_ids, start=1):
             existing = next((so for so in order.supplier_orders if so.supplier_id == supplier_id), None)
             if existing is None:
-                new_supplier_order = SupplierOrder(order_id=order_id, supplier_id=supplier_id, status=SupplierOrderStatus.SENT)
+                sub_order_number = f"{order.order_number}-{idx:03d}"
+                new_supplier_order = SupplierOrder(
+                    order_id=order_id,
+                    supplier_id=supplier_id,
+                    status=SupplierOrderStatus.SENT,
+                    sub_order_number=sub_order_number,
+                )
                 db.add(new_supplier_order)
                 await db.flush()
                 new_supplier_order_ids.append(new_supplier_order.id)
+    elif to_status == OrderStatus.CANCELLED:
+        # Tiered cancellation fee: 20% in SUPPLIER_PROCESSING, 0% beforehand
+        if from_status == OrderStatus.SUPPLIER_PROCESSING:
+            fee = (order.total_amount_usd * Decimal("0.20")).quantize(Decimal("0.01"))
+            order.cancellation_fee_usd = fee
+            order.refund_amount_usd = (order.total_amount_usd - fee).quantize(Decimal("0.01"))
+        else:
+            order.cancellation_fee_usd = Decimal("0.00")
+            order.refund_amount_usd = order.total_amount_usd
+
+        # Inventory restocking
+        for item in order.items:
+            if item.variant is not None:
+                item.variant.stock_qty += item.quantity
+
+        # Decline active supplier orders
+        for so in order.supplier_orders:
+            if so.status != SupplierOrderStatus.DECLINED:
+                so.status = SupplierOrderStatus.DECLINED
+                so.decline_reason = note or "Order cancelled"
 
     await log_audit(
         db,

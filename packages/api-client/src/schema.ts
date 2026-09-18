@@ -1484,6 +1484,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/supplier/promotions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List My Promotions */
+        get: operations["list_my_promotions_supplier_promotions_get"];
+        put?: never;
+        /** Create Promotion */
+        post: operations["create_promotion_supplier_promotions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/supplier/promotions/{promotion_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Promotion */
+        get: operations["get_promotion_supplier_promotions__promotion_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/promotions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List All Promotions */
+        get: operations["list_all_promotions_admin_promotions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/promotions/{promotion_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve Promotion */
+        post: operations["approve_promotion_admin_promotions__promotion_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/promotions/{promotion_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject Promotion */
+        post: operations["reject_promotion_admin_promotions__promotion_id__reject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/warehouse/external-shipments": {
         parameters: {
             query?: never;
@@ -1928,6 +2014,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/webhooks/whatsapp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Verify Webhook */
+        get: operations["verify_webhook_webhooks_whatsapp_get"];
+        put?: never;
+        /**
+         * Receive Webhook
+         * @description Process inbound messages from Meta. Always returns 200 immediately to
+         *     prevent Meta from retrying on a slow bot reply (replies are fire-and-forget
+         *     after we acknowledge).
+         */
+        post: operations["receive_webhook_webhooks_whatsapp_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -2199,6 +2308,52 @@ export interface components {
             /** Page Size */
             page_size: number;
         };
+        /** AdminPromotionOut */
+        AdminPromotionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Supplier Name */
+            supplier_name: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Product Name */
+            product_name: string;
+            slot_type: components["schemas"]["PromotionSlot"];
+            /** Rate Usd */
+            rate_usd: string;
+            /** Duration Days */
+            duration_days: number;
+            status: components["schemas"]["PromotionStatus"];
+            /** Start Date */
+            start_date: string | null;
+            /** End Date */
+            end_date: string | null;
+            /** Banner Image Url */
+            banner_image_url: string | null;
+            /** Custom Headline */
+            custom_headline: string | null;
+            /** Admin Notes */
+            admin_notes: string | null;
+            /** Reviewed By Name */
+            reviewed_by_name: string | null;
+            /** Impressions Count */
+            impressions_count: number;
+            /** Clicks Count */
+            clicks_count: number;
+            /** Orders Count */
+            orders_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** AdminSupplierOrderOut */
         AdminSupplierOrderOut: {
             /**
@@ -2225,6 +2380,15 @@ export interface components {
             role: components["schemas"]["UserRole"];
             /** Is Active */
             is_active: boolean;
+        };
+        /** ApprovePromotionIn */
+        ApprovePromotionIn: {
+            /** Admin Notes */
+            admin_notes?: string | null;
+            /** Start Date */
+            start_date?: string | null;
+            /** Duration Days */
+            duration_days?: number | null;
         };
         /**
          * AttachmentType
@@ -2307,31 +2471,46 @@ export interface components {
         };
         /** Body_upload_banner_image_admin_homepage_banners__banner_id__image_post */
         Body_upload_banner_image_admin_homepage_banners__banner_id__image_post: {
-            /** File */
+            /**
+             * File
+             * Format: binary
+             */
             file: string;
         };
         /** Body_upload_category_image_admin_categories__category_id__image_post */
         Body_upload_category_image_admin_categories__category_id__image_post: {
-            /** File */
+            /**
+             * File
+             * Format: binary
+             */
             file: string;
         };
         /** Body_upload_image_admin_products__product_id__images_post */
         Body_upload_image_admin_products__product_id__images_post: {
-            /** File */
+            /**
+             * File
+             * Format: binary
+             */
             file: string;
             /** Variant Id */
             variant_id?: string | null;
         };
         /** Body_upload_my_image_supplier_products__product_id__images_post */
         Body_upload_my_image_supplier_products__product_id__images_post: {
-            /** File */
+            /**
+             * File
+             * Format: binary
+             */
             file: string;
             /** Variant Id */
             variant_id?: string | null;
         };
         /** Body_upload_package_photo_warehouse_packages__package_id__photos_post */
         Body_upload_package_photo_warehouse_packages__package_id__photos_post: {
-            /** File */
+            /**
+             * File
+             * Format: binary
+             */
             file: string;
         };
         /** CartItemIn */
@@ -3166,12 +3345,18 @@ export interface components {
             shipping_fee_usd: string;
             /** Handling Fee Usd */
             handling_fee_usd: string;
+            /** Packaging Fee Usd */
+            packaging_fee_usd: string;
             /** Customs Estimate Usd */
             customs_estimate_usd: string;
             /** Total Amount Usd */
             total_amount_usd: string;
             /** Total Amount Kes */
             total_amount_kes: string | null;
+            /** Cancellation Fee Usd */
+            cancellation_fee_usd: string | null;
+            /** Refund Amount Usd */
+            refund_amount_usd: string | null;
             /** Shipping Country */
             shipping_country: string;
             /** Shipping Address */
@@ -3267,8 +3452,8 @@ export interface components {
             condition: components["schemas"]["PackageCondition"] | null;
             /** Weight Grams */
             weight_grams: number | null;
-            /** Volume Cbm */
-            volume_cbm: string | null;
+            /** Weight Kg */
+            weight_kg: string | null;
             /** Photo Urls */
             photo_urls: string[] | null;
             /** Location Code */
@@ -3316,16 +3501,15 @@ export interface components {
          * @enum {string}
          */
         PackageStatus: "EXPECTED" | "RECEIVED" | "READY_FOR_CONSOLIDATION" | "CONSOLIDATED" | "IN_TRANSIT" | "AT_CUSTOMS_KENYA" | "READY_FOR_DELIVERY" | "DELIVERED" | "EXCEPTION";
-        /** PackageWeighRequest */
+        /**
+         * PackageWeighRequest
+         * @description Warehouse staff enter weight in grams only.
+         *     CBM/dimensions are not captured — the platform charges by weight ($60/kg),
+         *     not volumetric rate. weight_kg is computed server-side.
+         */
         PackageWeighRequest: {
             /** Weight Grams */
             weight_grams: number;
-            /** Length Cm */
-            length_cm?: number | string | null;
-            /** Width Cm */
-            width_cm?: number | string | null;
-            /** Height Cm */
-            height_cm?: number | string | null;
         };
         /**
          * PaymentProviderType
@@ -3775,6 +3959,76 @@ export interface components {
             /** Weight Override Grams */
             weight_override_grams: number | null;
         };
+        /** PromotionOut */
+        PromotionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            /** Product Name */
+            product_name: string;
+            slot_type: components["schemas"]["PromotionSlot"];
+            /** Rate Usd */
+            rate_usd: string;
+            /** Duration Days */
+            duration_days: number;
+            status: components["schemas"]["PromotionStatus"];
+            /** Start Date */
+            start_date: string | null;
+            /** End Date */
+            end_date: string | null;
+            /** Banner Image Url */
+            banner_image_url: string | null;
+            /** Custom Headline */
+            custom_headline: string | null;
+            /** Admin Notes */
+            admin_notes: string | null;
+            /** Impressions Count */
+            impressions_count: number;
+            /** Clicks Count */
+            clicks_count: number;
+            /** Orders Count */
+            orders_count: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** PromotionRequestIn */
+        PromotionRequestIn: {
+            /**
+             * Product Id
+             * Format: uuid
+             */
+            product_id: string;
+            slot_type: components["schemas"]["PromotionSlot"];
+            /**
+             * Duration Days
+             * @default 7
+             */
+            duration_days: number;
+            /** Banner Image Url */
+            banner_image_url?: string | null;
+            /** Custom Headline */
+            custom_headline?: string | null;
+        };
+        /**
+         * PromotionSlot
+         * @enum {string}
+         */
+        PromotionSlot: "HERO_BANNER" | "FLASH_DEAL" | "CATEGORY_TOP" | "TRENDING_BADGE";
+        /**
+         * PromotionStatus
+         * @enum {string}
+         */
+        PromotionStatus: "PENDING" | "APPROVED" | "REJECTED" | "ACTIVE" | "EXPIRED";
         /** PublicTrackingOut */
         PublicTrackingOut: {
             /** Tracking Number */
@@ -3810,6 +4064,11 @@ export interface components {
             password: string;
             /** Phone */
             phone?: string | null;
+        };
+        /** RejectPromotionIn */
+        RejectPromotionIn: {
+            /** Admin Notes */
+            admin_notes: string;
         };
         /** ReportExceptionRequest */
         ReportExceptionRequest: {
@@ -4002,6 +4261,8 @@ export interface components {
             order_id: string;
             /** Order Number */
             order_number: string;
+            /** Sub Order Number */
+            sub_order_number: string | null;
             /** Customer Name */
             customer_name: string;
             status: components["schemas"]["SupplierOrderStatus"];
@@ -4384,10 +4645,6 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
-            /** Input */
-            input?: unknown;
-            /** Context */
-            ctx?: Record<string, never>;
         };
         /** VariantFacetsOut */
         VariantFacetsOut: {
@@ -7671,6 +7928,191 @@ export interface operations {
             };
         };
     };
+    list_my_promotions_supplier_promotions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionOut"][];
+                };
+            };
+        };
+    };
+    create_promotion_supplier_promotions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromotionRequestIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_promotion_supplier_promotions__promotion_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                promotion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_all_promotions_admin_promotions_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["PromotionStatus"] | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromotionOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    approve_promotion_admin_promotions__promotion_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                promotion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApprovePromotionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromotionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reject_promotion_admin_promotions__promotion_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                promotion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectPromotionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminPromotionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_external_shipments_warehouse_external_shipments_get: {
         parameters: {
             query?: {
@@ -8572,6 +9014,61 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WarehouseDashboardOut"];
+                };
+            };
+        };
+    };
+    verify_webhook_webhooks_whatsapp_get: {
+        parameters: {
+            query?: {
+                "hub.mode"?: string | null;
+                "hub.verify_token"?: string | null;
+                "hub.challenge"?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    receive_webhook_webhooks_whatsapp_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
         };

@@ -33,7 +33,12 @@ class Order(Base, UUIDPrimaryKeyMixin, CreatedAtMixin, UpdatedAtMixin):
     subtotal_usd: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     shipping_fee_usd: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     handling_fee_usd: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0, nullable=False)
+    packaging_fee_usd: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=2, nullable=False)
     customs_estimate_usd: Mapped[Decimal] = mapped_column(Numeric(10, 2), default=0, nullable=False)
+    subtotal_supplier_usd: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    platform_margin_usd: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    cancellation_fee_usd: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
+    refund_amount_usd: Mapped[Decimal | None] = mapped_column(Numeric(10, 2), nullable=True)
     discount_code_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("discount_codes.id"), nullable=True
     )

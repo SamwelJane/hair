@@ -1,4 +1,5 @@
 import secrets
+from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select, update
@@ -14,10 +15,10 @@ from app.core.security import (
 )
 from app.integrations import bank_transfer, mpesa_daraja
 from app.models.catalog import ProductVariant
-from app.models.enums import OrderStatus, PaymentProviderType, PaymentStatus
+from app.models.enums import OrderStatus, PaymentProviderType, PaymentStatus, StockType, SupplierOrderStatus
 from app.models.identity import User
 from app.models.orders import Order, OrderItem, OrderStatusHistory
-from app.models.payments import Payment
+from app.models.payments import Payment, SupplierOrder
 from app.models.pricing import DiscountCode
 from app.schemas.orders import (
     CheckoutRequest,
@@ -125,7 +126,10 @@ async def checkout(
         subtotal_usd=breakdown.subtotal_usd,
         shipping_fee_usd=breakdown.shipping_fee_usd,
         handling_fee_usd=breakdown.handling_fee_usd,
+        packaging_fee_usd=breakdown.packaging_fee_usd,
         customs_estimate_usd=breakdown.customs_estimate_usd,
+        subtotal_supplier_usd=breakdown.supplier_subtotal_usd,
+        platform_margin_usd=breakdown.platform_margin_usd,
         discount_code_id=applied_discount.id if applied_discount else None,
         total_amount_usd=breakdown.total_amount_usd,
         exchange_rate_applied=exchange_rate,
@@ -149,11 +153,9 @@ async def checkout(
         )
     db.add(OrderStatusHistory(order_id=order.id, to_status=OrderStatus.PENDING_PAYMENT, note="Order created at checkout"))
 
-    # Decrement stock atomically with order creation: a conditional UPDATE
-    # that only succeeds if enough stock remains, closing the race where two
-    # concurrent checkouts both read sufficient stock before either commits.
-    # Lines without a variant have nothing to decrement - stock is only
-    # tracked per-variant, never at the product level.
+    # Decrement stock atomically with order creation.
+    # For READY_TO_SHIP items, verify sufficient inventory remains.
+    # For MADE_TO_ORDER items (custom factory processing), allow order placement without stock failure.
     for line in resolved_lines:
         if line.variant_id is None:
             continue
@@ -162,11 +164,11 @@ async def checkout(
             .where(ProductVariant.id == line.variant_id, ProductVariant.stock_qty >= line.quantity)
             .values(stock_qty=ProductVariant.stock_qty - line.quantity)
         )
-        if stock_update.rowcount == 0:  # type: ignore[attr-defined]
+        if stock_update.rowcount == 0 and line.stock_type == StockType.READY_TO_SHIP:  # type: ignore[attr-defined]
             await db.rollback()
             raise HTTPException(
                 status_code=400,
-                detail="Not enough stock available for one of the items in your cart. Please adjust the quantity and try again.",
+                detail="Not enough ready stock available for one of the items in your cart. Please adjust the quantity or select Made-to-Order.",
             )
 
     # Re-check the usage limit inside the transaction to close the race where

@@ -36,7 +36,7 @@ async def _package_to_out(db: AsyncSession, package: Package, tracking_number: s
         qc_status=package.qc_status,
         condition=package.condition,
         weight_grams=package.weight_grams,
-        volume_cbm=package.volume_cbm,
+        weight_kg=package.weight_kg,
         photo_urls=package.photo_urls,
         location_code=package.location_code,
         notes=package.notes,
@@ -149,9 +149,6 @@ async def weigh_package(
             db,
             package_id=package_id,
             weight_grams=payload.weight_grams,
-            length_cm=payload.length_cm,
-            width_cm=payload.width_cm,
-            height_cm=payload.height_cm,
             actor_user_id=user.id,
         )
     except packages_service.PackageNotFoundError as exc:

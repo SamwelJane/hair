@@ -18,6 +18,7 @@ from app.models.orders import Order, OrderItem, OrderStatusHistory, Return, Revi
 from app.models.packages import Package
 from app.models.payments import Payment, SupplierOrder
 from app.models.pricing import CountryShippingRule, DiscountCode, ExchangeRate, PricingSetting
+from app.models.promotions import SupplierPromotionRequest
 from app.models.tracking_events import TrackingEvent
 from app.models.warehouse import Warehouse
 
@@ -53,6 +54,7 @@ __all__ = [
     "Review",
     "Supplier",
     "SupplierOrder",
+    "SupplierPromotionRequest",
     "TrackingEvent",
     "User",
     "Warehouse",

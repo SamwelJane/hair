@@ -196,3 +196,24 @@ class OpsExceptionStatus(str, enum.Enum):
 class HomepagePlacementSection(str, enum.Enum):
     FEATURED = "FEATURED"
     DEAL = "DEAL"
+
+
+class StockType(str, enum.Enum):
+    READY_TO_SHIP = "READY_TO_SHIP"
+    MADE_TO_ORDER = "MADE_TO_ORDER"
+    DISCONTINUED = "DISCONTINUED"
+
+
+class PromotionSlot(str, enum.Enum):
+    HERO_BANNER = "HERO_BANNER"
+    FLASH_DEAL = "FLASH_DEAL"
+    CATEGORY_TOP = "CATEGORY_TOP"
+    TRENDING_BADGE = "TRENDING_BADGE"
+
+
+class PromotionStatus(str, enum.Enum):
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    REJECTED = "REJECTED"
+    ACTIVE = "ACTIVE"
+    EXPIRED = "EXPIRED"

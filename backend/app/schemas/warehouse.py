@@ -58,10 +58,10 @@ class PackageQCRequest(BaseModel):
 
 
 class PackageWeighRequest(BaseModel):
+    """Warehouse staff enter weight in grams only.
+    CBM/dimensions are not captured — the platform charges by weight ($60/kg),
+    not volumetric rate. weight_kg is computed server-side."""
     weight_grams: int = Field(gt=0)
-    length_cm: Decimal | None = None
-    width_cm: Decimal | None = None
-    height_cm: Decimal | None = None
 
 
 class PackageOut(BaseModel):
@@ -75,7 +75,7 @@ class PackageOut(BaseModel):
     qc_status: PackageQCStatus
     condition: PackageCondition | None
     weight_grams: int | None
-    volume_cbm: Decimal | None
+    weight_kg: Decimal | None
     photo_urls: list[str] | None
     location_code: str | None
     notes: str | None

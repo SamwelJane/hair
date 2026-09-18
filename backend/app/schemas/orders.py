@@ -84,9 +84,13 @@ class OrderOut(BaseModel):
     subtotal_usd: Decimal
     shipping_fee_usd: Decimal
     handling_fee_usd: Decimal
+    packaging_fee_usd: Decimal
     customs_estimate_usd: Decimal
     total_amount_usd: Decimal
     total_amount_kes: Decimal | None
+    # Populated on cancellation
+    cancellation_fee_usd: Decimal | None
+    refund_amount_usd: Decimal | None
     shipping_country: str
     shipping_address: dict[str, Any]
     items: list[OrderItemOut]

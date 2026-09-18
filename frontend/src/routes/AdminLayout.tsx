@@ -1,41 +1,66 @@
-import { Link, Outlet } from "react-router";
+import { NavLink, Outlet } from "react-router";
 import { useAuth } from "../lib/auth/AuthContext";
 
 const LINKS = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/products", label: "Products" },
-  { href: "/admin/categories", label: "Categories" },
-  { href: "/admin/homepage/banners", label: "Homepage Banners" },
-  { href: "/admin/homepage/products", label: "Homepage Products" },
-  { href: "/admin/suppliers", label: "Suppliers" },
-  { href: "/admin/orders", label: "Orders" },
-  { href: "/admin/returns", label: "Returns" },
-  { href: "/admin/reviews", label: "Reviews" },
-  { href: "/admin/payments", label: "Payments" },
-  { href: "/admin/analytics", label: "Analytics" },
-  { href: "/admin/audit-logs", label: "Audit Logs" },
-  { href: "/admin/users", label: "Users" },
-  { href: "/admin/settings/exchange-rate", label: "Exchange Rate" },
-  { href: "/admin/settings/pricing", label: "Pricing Settings" },
-  { href: "/admin/settings/shipping-rules", label: "Shipping Rules" },
-  { href: "/admin/settings/discount-codes", label: "Discount Codes" },
+  { href: "/admin", label: "📊 Dashboard", end: true },
+  { href: "/admin/orders", label: "🛒 Orders" },
+  { href: "/admin/payments", label: "💳 Payments" },
+  { href: "/admin/promotions", label: "🎯 Promotions" },
+  { href: "/admin/products", label: "💇 Products" },
+  { href: "/admin/categories", label: "🏷️ Categories" },
+  { href: "/admin/suppliers", label: "🏭 Suppliers" },
+  { href: "/admin/homepage/banners", label: "🖼️ Homepage Banners" },
+  { href: "/admin/homepage/products", label: "⭐ Featured Products" },
+  { href: "/admin/returns", label: "↩️ Returns" },
+  { href: "/admin/reviews", label: "⭐ Reviews" },
+  { href: "/admin/analytics", label: "📈 Analytics" },
+  { href: "/admin/users", label: "👥 Users" },
+  { href: "/admin/audit-logs", label: "🔍 Audit Logs" },
+  { href: "/admin/settings/pricing", label: "⚙️ Pricing" },
+  { href: "/admin/settings/exchange-rate", label: "💱 Exchange Rate" },
+  { href: "/admin/settings/shipping-rules", label: "🚚 Shipping Rules" },
+  { href: "/admin/settings/discount-codes", label: "🎟️ Discount Codes" },
 ];
 
+/** Admin portal — left sidebar navigation layout. */
 export function AdminLayout() {
   const { user, logout } = useAuth();
+
   return (
-    <div className="app-shell">
-      <header className="site-header">
-        <Link to="/admin" className="brand">Hiar Business Admin</Link>
-        <nav>
-          <span className="muted">{user?.email} ({user?.role})</span>
-          <button type="button" className="link-button" onClick={() => void logout()}>Sign out</button>
+    <div className="portal-shell">
+      {/* ── Left sidebar ─────────────────────────────────────────────────── */}
+      <aside className="portal-sidebar">
+        <div className="portal-sidebar__brand">
+          <span>Hiar Business</span>
+          <small>Admin</small>
+        </div>
+
+        <nav className="portal-sidebar__nav" aria-label="Admin navigation">
+          {LINKS.map((link) => (
+            <NavLink
+              key={link.href}
+              to={link.href}
+              end={link.end}
+              className={({ isActive }) =>
+                ["portal-sidebar__link", isActive ? "portal-sidebar__link--active" : ""].join(" ").trim()
+              }
+            >
+              {link.label}
+            </NavLink>
+          ))}
         </nav>
-      </header>
-      <nav className="admin-subnav">
-        {LINKS.map((link) => <Link key={link.href} to={link.href}>{link.label}</Link>)}
-      </nav>
-      <main className="site-main">
+
+        <div className="portal-sidebar__footer">
+          <span className="portal-sidebar__user">{user?.email}</span>
+          <span className="portal-sidebar__role">{user?.role}</span>
+          <button type="button" className="portal-sidebar__signout" onClick={() => void logout()}>
+            Sign out
+          </button>
+        </div>
+      </aside>
+
+      {/* ── Main content area ────────────────────────────────────────────── */}
+      <main className="portal-main">
         <Outlet />
       </main>
     </div>

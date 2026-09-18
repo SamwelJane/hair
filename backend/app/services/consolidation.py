@@ -17,9 +17,14 @@ from app.models.enums import (
     PackageStatus,
 )
 from app.models.exceptions import OpsException
+from app.models.orders import Order
 from app.models.packages import Package
 from app.models.warehouse import Warehouse
 from app.services.audit import log_audit
+from app.services.notifications.whatsapp import (
+    customer_departed_vietnam_whatsapp_message,
+    send_whatsapp,
+)
 from app.services.order_numbering import random_suffix
 from app.services.packages import get_primary_vn_warehouse
 from app.services.tracking_events import add_event
@@ -225,7 +230,24 @@ async def mark_departed(db: AsyncSession, *, consolidation_id: uuid.UUID, actor_
     )
     await db.commit()
     await db.refresh(consolidation)
+
+    # ── Milestone WhatsApp: "Dispatched from Vietnam" ─────────────────────
+    # Load orders for all packages in this consolidation and notify unique
+    # customers (deduplicated by phone) so multi-package customers get one msg.
+    notified_phones: set[str] = set()
+    for package in consolidation.packages:
+        if package.order_id is None:
+            continue
+        order = await db.get(Order, package.order_id, options=[selectinload(Order.user)])
+        if order and order.user.phone and order.user.phone not in notified_phones:
+            notified_phones.add(order.user.phone)
+            await send_whatsapp(
+                order.user.phone,
+                customer_departed_vietnam_whatsapp_message(order_number=order.order_number),
+            )
+
     return consolidation
+
 
 
 async def mark_in_transit(

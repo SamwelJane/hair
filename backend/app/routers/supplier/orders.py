@@ -45,6 +45,7 @@ def _to_out(supplier_order: SupplierOrder) -> SupplierOrderOut:
         id=supplier_order.id,
         order_id=order.id,
         order_number=order.order_number,
+        sub_order_number=supplier_order.sub_order_number,
         customer_name=order.user.name,
         status=supplier_order.status,
         sent_at=supplier_order.sent_at,

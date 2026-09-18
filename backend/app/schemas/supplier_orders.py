@@ -16,6 +16,7 @@ class SupplierOrderOut(BaseModel):
     id: uuid.UUID
     order_id: uuid.UUID
     order_number: str
+    sub_order_number: str | None
     customer_name: str
     status: SupplierOrderStatus
     sent_at: datetime

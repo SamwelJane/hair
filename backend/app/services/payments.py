@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 
 from app.core.rate_limit import rate_limit
 from app.models.enums import OrderStatus, PaymentProviderType, PaymentStatus
-from app.models.orders import Order, OrderStatusHistory
+from app.models.orders import Order
 from app.models.payments import Payment
 from app.services.audit import log_audit
 
@@ -41,21 +41,6 @@ async def confirm_bank_transfer_payment(db: AsyncSession, payment_id: uuid.UUID,
     payment.status = PaymentStatus.SUCCESS
     payment.confirmed_by_id = admin_user_id
 
-    order = await db.get(Order, payment.order_id)
-    if order is None:
-        raise PaymentActionError("Order not found")
-    from_status = order.status
-    order.status = OrderStatus.PAID
-    db.add(
-        OrderStatusHistory(
-            order_id=order.id,
-            from_status=from_status,
-            to_status=OrderStatus.PAID,
-            changed_by_id=admin_user_id,
-            note="Bank transfer manually confirmed by admin",
-        )
-    )
-
     await log_audit(
         db,
         user_id=admin_user_id,
@@ -64,7 +49,22 @@ async def confirm_bank_transfer_payment(db: AsyncSession, payment_id: uuid.UUID,
         entity_id=str(payment.id),
         metadata={"orderId": str(payment.order_id), "amountKes": str(payment.amount_kes)},
     )
-    await db.commit()
+    # Flush the payment update so state machine sees SUCCESS status if it re-reads
+    await db.flush()
+
+    # Route through canonical state machine — this writes OrderStatusHistory, fires
+    # WhatsApp notification, and commits, so we must NOT call db.commit() again here.
+    from app.services import order_state_machine
+    try:
+        await order_state_machine.transition_order_status(
+            db, payment.order_id, OrderStatus.PAID,
+            actor_user_id=admin_user_id,
+            note="Bank transfer manually confirmed by admin",
+        )
+    except order_state_machine.InvalidTransitionError:
+        # Order may already be PAID (idempotent re-confirmation) — just commit the payment row.
+        await db.commit()
+
 
 
 async def reject_bank_transfer_payment(db: AsyncSession, payment_id: uuid.UUID, admin_user_id: uuid.UUID) -> None:
@@ -122,18 +122,17 @@ async def apply_mpesa_callback(db: AsyncSession, payment: Payment, *, is_success
     payment.raw_callback_payload = raw_payload
 
     if is_success:
-        order = await db.get(Order, payment.order_id)
-        if order is not None:
-            from_status = order.status
-            order.status = OrderStatus.PAID
-            db.add(
-                OrderStatusHistory(
-                    order_id=order.id,
-                    from_status=from_status,
-                    to_status=OrderStatus.PAID,
-                    note=f"M-Pesa payment confirmed ({result_desc})",
-                )
+        # Use state machine so WhatsApp notification, audit log and status history
+        # are all consistently emitted from one place. Guard against replayed
+        # callbacks that try to re-transition an already-PAID order.
+        from app.services import order_state_machine
+        try:
+            await order_state_machine.transition_order_status(
+                db, payment.order_id, OrderStatus.PAID,
+                note=f"M-Pesa payment confirmed ({result_desc})",
             )
+        except order_state_machine.InvalidTransitionError:
+            pass  # Already PAID — idempotent
 
     await log_audit(
         db,
@@ -144,3 +143,4 @@ async def apply_mpesa_callback(db: AsyncSession, payment: Payment, *, is_success
         metadata={"resultDesc": result_desc, "orderId": str(payment.order_id)},
     )
     await db.commit()
+

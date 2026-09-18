@@ -156,13 +156,21 @@ async def receive_platform_package(
 ) -> Package:
     """Scans an *existing* order tracking number and creates the Package row
     for its physical arrival - never generates a new tracking number (spec
-    section 5: "Staff must NOT generate another tracking number")."""
+    section 5: "Staff must NOT generate another tracking number").
+
+    Weight workflow:
+    - Warehouse always enters weight in grams (no CBM/dimensions required).
+    - weight_kg is computed automatically: weight_grams / 1000.
+    - If supplier declared a total weight for their items, a >10% variance
+      triggers an automatic WEIGHT_MISMATCH OpsException for ops review.
+    """
     order = await db.scalar(
         select(Order).where(Order.tracking_number == tracking_number).options(selectinload(Order.user))
     )
     if order is None:
         raise TrackingNumberNotFoundError(f"Tracking number {tracking_number} not found.")
 
+    supplier_order = None
     if supplier_order_id is not None:
         supplier_order = await db.get(SupplierOrder, supplier_order_id)
         if supplier_order is None or supplier_order.order_id != order.id:
@@ -177,6 +185,11 @@ async def receive_platform_package(
     if existing is not None:
         raise DuplicateReceiptError("This package has already been received.")
 
+    # Grams → kg conversion (warehouse enters grams; pricing/shipping uses kg)
+    weight_kg: Decimal | None = None
+    if weight_grams is not None:
+        weight_kg = (Decimal(weight_grams) / Decimal(1000)).quantize(Decimal("0.001"))
+
     warehouse = await get_primary_vn_warehouse(db)
     package = Package(
         package_code=await generate_package_code(db),
@@ -184,6 +197,7 @@ async def receive_platform_package(
         supplier_order_id=supplier_order_id,
         warehouse_id=warehouse.id,
         weight_grams=weight_grams,
+        weight_kg=weight_kg,
         condition=condition,
         notes=notes,
         status=PackageStatus.RECEIVED,
@@ -192,6 +206,59 @@ async def receive_platform_package(
     )
     db.add(package)
     await db.flush()
+
+    # ── Weight discrepancy check ─────────────────────────────────────────────
+    # Compare actual weighed grams against the sum of supplier-declared weights
+    # for all items in this supplier's portion of the order. A >10% variance
+    # auto-raises a WEIGHT_MISMATCH so ops staff can flag it with the factory.
+    if weight_grams is not None and supplier_order is not None:
+        from app.models.catalog import Product, ProductVariant
+        from app.models.orders import OrderItem
+
+        # Load items that belong to this supplier's order
+        stmt = (
+            select(OrderItem)
+            .where(OrderItem.order_id == order.id)
+            .options(
+                selectinload(OrderItem.product),
+                selectinload(OrderItem.variant),
+            )
+        )
+        items = list((await db.execute(stmt)).scalars().all())
+        supplier_items = [i for i in items if i.product.supplier_id == supplier_order.supplier_id]
+
+        # Sum declared weights: prefer variant-level override, then product-level.
+        # Both are stored in grams.
+        declared_grams: int = 0
+        all_declared = True
+        for item in supplier_items:
+            item_weight = None
+            if item.variant is not None and item.variant.weight_override_grams is not None:
+                item_weight = item.variant.weight_override_grams
+            elif item.product.base_weight_grams is not None:
+                item_weight = item.product.base_weight_grams
+            if item_weight is None:
+                all_declared = False
+                break
+            declared_grams += item_weight * item.quantity
+
+        if all_declared and declared_grams > 0:
+            variance_pct = Decimal(abs(weight_grams - declared_grams)) / Decimal(declared_grams)
+            if variance_pct > Decimal("0.10"):
+                db.add(
+                    OpsException(
+                        type=OpsExceptionType.WEIGHT_MISMATCH,
+                        severity=OpsExceptionSeverity.MEDIUM,
+                        entity_type="Package",
+                        entity_id=str(package.id),
+                        description=(
+                            f"Weight mismatch: warehouse scanned {weight_grams}g, "
+                            f"supplier declared {declared_grams}g "
+                            f"({variance_pct * 100:.1f}% variance)."
+                        ),
+                        status=OpsExceptionStatus.OPEN,
+                    )
+                )
 
     await add_event(
         db,
@@ -207,7 +274,12 @@ async def receive_platform_package(
         action="RECEIVE_PACKAGE",
         entity_type="Package",
         entity_id=str(package.id),
-        metadata={"trackingNumber": tracking_number, "orderId": str(order.id)},
+        metadata={
+            "trackingNumber": tracking_number,
+            "orderId": str(order.id),
+            "weightGrams": weight_grams,
+            "weightKg": str(weight_kg) if weight_kg is not None else None,
+        },
     )
     await db.commit()
     await db.refresh(package)
@@ -219,6 +291,7 @@ async def receive_platform_package(
         )
 
     return package
+
 
 
 async def run_qc(
@@ -274,20 +347,17 @@ async def record_weight(
     *,
     package_id: uuid.UUID,
     weight_grams: int,
-    length_cm: Decimal | None,
-    width_cm: Decimal | None,
-    height_cm: Decimal | None,
     actor_user_id: uuid.UUID,
 ) -> Package:
+    """Records the weighed mass for a package. Warehouse enters grams; kg is
+    derived automatically. No CBM/dimension capture — platform charges by
+    weight ($60/kg), not volumetric rate."""
     package = await db.get(Package, package_id)
     if package is None:
         raise PackageNotFoundError(f"Package {package_id} not found.")
 
     package.weight_grams = weight_grams
-    package.length_cm = length_cm
-    package.width_cm = width_cm
-    package.height_cm = height_cm
-    package.volume_cbm = compute_volume_cbm(length_cm, width_cm, height_cm)
+    package.weight_kg = (Decimal(weight_grams) / Decimal(1000)).quantize(Decimal("0.001"))
 
     await log_audit(
         db,
@@ -295,7 +365,7 @@ async def record_weight(
         action="PACKAGE_WEIGH",
         entity_type="Package",
         entity_id=str(package.id),
-        metadata={"weightGrams": weight_grams},
+        metadata={"weightGrams": weight_grams, "weightKg": str(package.weight_kg)},
     )
     await db.commit()
     await db.refresh(package)

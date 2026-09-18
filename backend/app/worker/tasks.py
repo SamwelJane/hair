@@ -36,13 +36,19 @@ async def notify_supplier_new_order(ctx: dict[str, Any], supplier_order_id: str)
             (
                 await db.execute(
                     select(OrderItem)
-                    .where(OrderItem.order_id == supplier_order.order_id)
+                    .join(OrderItem.product)
+                    .where(
+                        OrderItem.order_id == supplier_order.order_id,
+                        OrderItem.product.has(supplier_id=supplier_order.supplier_id),
+                    )
                     .options(selectinload(OrderItem.product), selectinload(OrderItem.variant))
                 )
             )
             .scalars()
             .all()
         )
+
+        display_order_number = supplier_order.sub_order_number or supplier_order.order.order_number
 
         product_lines = [
             f"{item.quantity}x {item.product.name}"
@@ -52,7 +58,7 @@ async def notify_supplier_new_order(ctx: dict[str, Any], supplier_order_id: str)
 
         subject, html = supplier_order_email(
             supplier_name=supplier_order.supplier.name,
-            order_number=supplier_order.order.order_number,
+            order_number=display_order_number,
             product_lines=product_lines,
         )
         await send_email(supplier_order.supplier.email, subject, html)
@@ -61,7 +67,7 @@ async def notify_supplier_new_order(ctx: dict[str, Any], supplier_order_id: str)
             supplier_order.supplier.whatsapp_number,
             supplier_order_whatsapp_message(
                 supplier_name=supplier_order.supplier.name,
-                order_number=supplier_order.order.order_number,
+                order_number=display_order_number,
                 product_lines=product_lines,
             ),
         )
