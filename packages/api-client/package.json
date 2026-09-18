@@ -1,0 +1,17 @@
+{
+  "name": "@hiar-business/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "generate": "openapi-typescript http://localhost:8000/openapi.json -o src/schema.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.4.0"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.13.0"
+  }
+}
