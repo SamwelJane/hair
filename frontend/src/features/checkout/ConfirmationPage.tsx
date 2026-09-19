@@ -68,7 +68,7 @@ export function ConfirmationPage() {
             <span>
               <strong>${order.total_amount_usd}</strong>
               {order.total_amount_kes && (
-                <span className="summary-kes"> / KES {Number(order.total_amount_kes).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                <span className="summary-kes"> / KES {Math.round(Number(order.total_amount_kes)).toLocaleString("en-KE")}</span>
               )}
             </span>
           </div>

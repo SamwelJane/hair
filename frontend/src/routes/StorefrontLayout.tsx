@@ -151,7 +151,7 @@ export function StorefrontLayout() {
             <p>Nairobi, Kenya</p>
           </div>
         </div>
-        <p className="sf-footer__copy">&copy; {new Date().getFullYear()} Hiar Business. All rights reserved.</p>
+        <p className="sf-footer__copy">&copy; 2026 Hiar Business Ltd. All rights reserved.</p>
       </footer>
     </div>
   );

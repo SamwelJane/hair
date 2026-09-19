@@ -455,7 +455,6 @@ async def _get_or_create_supplier(db: AsyncSession, data: dict) -> Supplier:
         user = User(
             name=data["name"],
             email=user_email,
-            hashed_password=hash_password("SupplierPOC2025!"),
             password_hash=hash_password("SupplierPOC2025!"),
             role=UserRole.SUPPLIER,
             is_active=True,
@@ -482,7 +481,6 @@ async def _get_or_create_category(db: AsyncSession, name: str) -> Category:
     existing = (await db.execute(select(Category).where(Category.name == name))).scalar_one_or_none()
     if existing:
         return existing
-    cat = Category(name=name, slug=name.lower().replace(" ", "-"), description=f"{name} — Vietnamese hair products")
     cat = Category(name=name, slug=name.lower().replace(" ", "-"), is_featured=True)
     db.add(cat)
     await db.flush()
@@ -513,12 +511,10 @@ async def _create_product(
     supplier: Supplier,
     category: Category,
     data: dict,
-) -> None:
 ) -> Product | None:
     existing = (await db.execute(select(Product).where(Product.slug == data["slug"]))).scalar_one_or_none()
     if existing:
         print(f"  ↳ Product already exists: {data['name']}")
-        return
         return existing
 
     product = Product(
@@ -561,7 +557,6 @@ async def _create_product(
 
     # Images (max 3)
     for img_url in data.get("images", [])[:3]:
-        db.add(ProductImage(product_id=product.id, url=img_url, is_primary=False))
         db.add(ProductImage(product_id=product.id, url=img_url))
 
     print(f"  ✅ Created product: {data['name']} ({len(data.get('variants', []))} variants, {len(data.get('images', [])[:3])} images)")
@@ -653,7 +648,6 @@ async def seed() -> None:
         for product_data in PRODUCTS:
             supplier = suppliers[product_data["supplier_idx"]]
             category = categories[product_data["category"]]
-            await _create_product(db, supplier, category, product_data)
             p = await _create_product(db, supplier, category, product_data)
             if p:
                 created_products.append(p)

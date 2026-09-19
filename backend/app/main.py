@@ -38,6 +38,7 @@ from app.routers.warehouse import customs as warehouse_customs
 from app.routers.warehouse import dashboard as warehouse_dashboard
 from app.routers.warehouse import external_shipments as warehouse_external_shipments
 from app.routers.warehouse import packages as warehouse_packages
+from app.routers.webhooks import mpesa as webhook_mpesa
 from app.routers.webhooks import whatsapp as webhook_whatsapp
 
 settings = get_settings()
@@ -87,6 +88,7 @@ app.include_router(warehouse_consolidations.router)
 app.include_router(warehouse_customs.router)
 app.include_router(warehouse_dashboard.router)
 app.include_router(webhook_whatsapp.router)
+app.include_router(webhook_mpesa.router)
 
 
 @app.get("/health")

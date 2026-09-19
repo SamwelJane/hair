@@ -1,5 +1,7 @@
 from functools import lru_cache
+from typing import Any
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -43,6 +45,21 @@ class Settings(BaseSettings):
     admin_notification_email: str | None = None
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:5180"]
     frontend_url: str = "http://localhost:5173"
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Any) -> list[str]:
+        if isinstance(v, str):
+            if v.startswith("[") and v.endswith("]"):
+                import json
+                try:
+                    return json.loads(v)
+                except Exception:
+                    pass
+            return [i.strip() for i in v.split(",") if i.strip()]
+        elif isinstance(v, (list, tuple)):
+            return [str(i) for i in v]
+        return ["http://localhost:5173", "http://localhost:5180"]
 
     # Contabo / PostgreSQL Connection Pool & WAN Keepalive settings
     db_pool_size: int = 20

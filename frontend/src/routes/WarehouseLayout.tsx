@@ -2,14 +2,6 @@ import { NavLink, Outlet } from "react-router";
 import { useAuth } from "../lib/auth/AuthContext";
 
 const WAREHOUSE_LINKS = [
-  { href: "/warehouse", label: "📊 Dashboard", end: true },
-  { href: "/warehouse/receive", label: "📥 Receive Package" },
-  { href: "/warehouse/packages", label: "📦 Package Registry" },
-  { href: "/warehouse/external-shipments/new", label: "➕ New External Shipment" },
-  { href: "/warehouse/external-shipments", label: "🚢 External Shipments" },
-  { href: "/warehouse/consolidation-queue", label: "🗂️ Consolidation Queue" },
-  { href: "/warehouse/consolidations", label: "📋 Consolidations" },
-  { href: "/warehouse/customs", label: "🏛️ Customs" },
   { href: "/warehouse", label: "Dashboard", end: true },
   { href: "/warehouse/receive", label: "Receive Package" },
   { href: "/warehouse/packages", label: "Package Registry" },
@@ -21,11 +13,6 @@ const WAREHOUSE_LINKS = [
 ];
 
 const KENYA_OPS_LINKS = [
-  { href: "/warehouse", label: "📊 Dashboard", end: true },
-  { href: "/warehouse/external-shipments", label: "🚢 External Shipments" },
-  { href: "/warehouse/packages", label: "📦 Package Registry" },
-  { href: "/warehouse/consolidations", label: "📋 Consolidations" },
-  { href: "/warehouse/customs", label: "🏛️ Customs" },
   { href: "/warehouse", label: "Dashboard", end: true },
   { href: "/warehouse/external-shipments", label: "External Shipments" },
   { href: "/warehouse/packages", label: "Package Registry" },

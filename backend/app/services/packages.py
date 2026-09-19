@@ -284,9 +284,15 @@ async def receive_platform_package(
     await db.commit()
     await db.refresh(package)
 
-    if order.user.phone:
+    customer_phone = None
+    if isinstance(order.shipping_address, dict):
+        customer_phone = order.shipping_address.get("phone")
+    if not customer_phone and order.user:
+        customer_phone = order.user.phone
+
+    if customer_phone:
         await send_whatsapp(
-            order.user.phone,
+            customer_phone,
             customer_package_received_whatsapp_message(order_number=order.order_number, tracking_number=tracking_number),
         )
 

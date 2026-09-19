@@ -10,6 +10,14 @@ from app.main import app
 
 @pytest.fixture(autouse=True)
 async def _clean_database():
+    db_name = str(engine.url.database or "")
+    # Safety guard: only allow dropping tables if the database name explicitly contains 'test'
+    if not db_name.endswith("_test") and "test" not in db_name.lower():
+        raise RuntimeError(
+            f"DESTRUCTIVE TEST GUARD: Refusing to drop tables on database '{db_name}'. "
+            "Automated test suite requires a dedicated test database whose name contains 'test' "
+            "(e.g., 'hiar_business_test' or set TEST_DATABASE_URL)."
+        )
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)

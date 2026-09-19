@@ -20,10 +20,6 @@ const RATE_CARD: Record<string, number> = {
 };
 
 const SLOT_LABELS: Record<string, string> = {
-  HERO_BANNER: "🖼️ Hero Banner",
-  FLASH_DEAL: "⚡ Flash Deal",
-  CATEGORY_TOP: "🔝 Category Top",
-  TRENDING_BADGE: "🔥 Trending Badge",
   HERO_BANNER: "Hero Banner",
   FLASH_DEAL: "Flash Deal",
   CATEGORY_TOP: "Category Top",
@@ -196,7 +192,6 @@ export function SupplierPromotionsPage() {
           </label>
 
           <p className="promo-form__cost">
-            💰 Estimated cost: <strong>${estimatedCost}</strong> for {form.duration_days} days
             Estimated cost: <strong>${estimatedCost}</strong> for {form.duration_days} days
           </p>
 
@@ -241,9 +236,6 @@ export function SupplierPromotionsPage() {
                 <p className="promo-card__notes">Admin notes: {p.admin_notes}</p>
               ) : null}
               <div className="promo-card__stats">
-                👁️ {p.impressions_count} impressions &nbsp;
-                🖱️ {p.clicks_count} clicks &nbsp;
-                🛒 {p.orders_count} orders
                 {p.impressions_count} impressions &nbsp;•&nbsp;
                 {p.clicks_count} clicks &nbsp;•&nbsp;
                 {p.orders_count} orders

@@ -100,8 +100,6 @@ export function ReceivePackagePage() {
           Condition
           <select value={condition} onChange={(e) => setCondition(e.target.value as "" | "GOOD" | "DAMAGED")}>
             <option value="">Select condition (optional)</option>
-            <option value="GOOD">✅ Good — no visible damage</option>
-            <option value="DAMAGED">⚠️ Damaged — visible damage noted</option>
             <option value="GOOD">Good — no visible damage</option>
             <option value="DAMAGED">Damaged — visible damage noted</option>
           </select>
@@ -119,7 +117,6 @@ export function ReceivePackagePage() {
         </label>
 
         <button type="submit" className="btn btn--primary btn--lg" disabled={receive.isPending}>
-          {receive.isPending ? "Receiving…" : "📥 Receive Package"}
           {receive.isPending ? "Receiving…" : "Receive Package"}
         </button>
       </form>
@@ -135,13 +132,11 @@ export function ReceivePackagePage() {
       {receive.isSuccess && receive.data && (
         <div className="callout callout--success" style={{ marginTop: "1rem" }}>
           <p>
-            ✅ Received <strong>{receive.data.package_code}</strong> — tracking{" "}
             Received <strong>{receive.data.package_code}</strong> — tracking{" "}
             <strong>{receive.data.tracking_number}</strong>
           </p>
           {receive.data.weight_kg && (
             <p>
-              ⚖️ Weight: <strong>{receive.data.weight_grams} g</strong>{" "}
               Weight: <strong>{receive.data.weight_grams} g</strong>{" "}
               <span className="muted">({receive.data.weight_kg} kg)</span>
             </p>

@@ -113,7 +113,7 @@ export function CheckoutPage() {
   }
 
   const kesFormatted = summary.data?.total_amount_kes
-    ? Number(summary.data.total_amount_kes).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    ? Math.round(Number(summary.data.total_amount_kes)).toLocaleString("en-KE")
     : null;
 
   return (
@@ -178,11 +178,6 @@ export function CheckoutPage() {
                   Total KES: <strong>KES {kesFormatted}</strong>
                 </div>
               )}
-              {summary.data.effective_exchange_rate && (
-                <small style={{ display: "block", color: "var(--muted)", marginTop: "0.25rem" }}>
-                  Exchange Rate: 1 USD = KES {summary.data.effective_exchange_rate}
-                </small>
-              )}
             </div>
           </div>
         )}
@@ -208,11 +203,9 @@ export function CheckoutPage() {
               <button
                 type="button"
                 onClick={() => setShowPaymentModal(false)}
-                style={{ background: "none", border: "none", fontSize: "1.25rem", cursor: "pointer", color: "var(--muted)" }}
                 style={{ background: "none", border: "none", fontSize: "1.25rem", cursor: "pointer", color: "var(--muted)", padding: "4px" }}
                 aria-label="Close payment modal"
               >
-                ✕
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
@@ -226,13 +219,8 @@ export function CheckoutPage() {
                 ${summary.data?.total_amount_usd}
               </div>
               {kesFormatted && (
-                <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--accent)" }}>
+                <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--accent)" }}>
                   KES {kesFormatted}
-                </div>
-              )}
-              {summary.data?.effective_exchange_rate && (
-                <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.25rem" }}>
-                  Effective rate: 1 USD = KES {summary.data.effective_exchange_rate}
                 </div>
               )}
             </div>
@@ -275,11 +263,11 @@ export function CheckoutPage() {
 
             {/* Tab 1: M-Pesa STK Push */}
             {paymentMethod === "MPESA" && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--muted)" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", background: "#ffffff", padding: "1.25rem", borderRadius: "8px", border: "1px solid var(--border)", color: "#000000" }}>
+                <p style={{ margin: 0, fontSize: "0.85rem", color: "#111827" }}>
                   An automated payment prompt will appear on your phone screen. Simply enter your M-Pesa PIN to complete checkout.
                 </p>
-                <label style={{ display: "flex", flexDirection: "column", gap: "0.25rem", fontSize: "0.85rem", fontWeight: 600 }}>
+                <label style={{ display: "flex", flexDirection: "column", gap: "0.35rem", fontSize: "0.85rem", fontWeight: 600, color: "#000000" }}>
                   Safaricom Phone Number
                   <input
                     required
@@ -287,7 +275,7 @@ export function CheckoutPage() {
                     placeholder="e.g. 0712345678 or 254712345678"
                     value={mpesaPhone}
                     onChange={(e) => setMpesaPhone(e.target.value)}
-                    style={{ padding: "0.6rem", borderRadius: "6px", border: "1px solid var(--border)", fontSize: "0.95rem" }}
+                    style={{ padding: "0.7rem", borderRadius: "6px", border: "1px solid #111827", fontSize: "0.95rem", background: "#ffffff", color: "#000000" }}
                   />
                 </label>
                 <button
@@ -338,7 +326,7 @@ export function CheckoutPage() {
                       <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>Exact Amount:</span>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         <strong style={{ color: "var(--accent)" }}>KES {kesFormatted}</strong>
-                        <CopyButton text={String(summary.data?.total_amount_kes ?? "")} label="Amount" />
+                        <CopyButton text={String(summary.data?.total_amount_kes ? Math.round(Number(summary.data.total_amount_kes)) : "")} label="Amount" />
                       </div>
                     </div>
                   )}

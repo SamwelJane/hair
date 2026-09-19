@@ -2,9 +2,6 @@ import { NavLink, Outlet } from "react-router";
 import { useAuth } from "../lib/auth/AuthContext";
 
 const LINKS = [
-  { href: "/supplier/orders", label: "📦 My Orders" },
-  { href: "/supplier/products", label: "💇 My Products" },
-  { href: "/supplier/promotions", label: "🎯 Promotions" },
   { href: "/supplier/orders", label: "My Orders" },
   { href: "/supplier/products", label: "My Products" },
   { href: "/supplier/promotions", label: "Promotions" },

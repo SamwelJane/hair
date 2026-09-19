@@ -53,9 +53,6 @@ export function HomePage() {
       <HeroCarousel banners={data.banners} />
 
       <div className="trust-strip">
-        <span>🚚 Sourced direct from Vietnam</span>
-        <span>🔒 Secure M-Pesa &amp; bank payments</span>
-        <span>📦 Tracked door-to-door to Kenya</span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
           Sourced direct from Vietnam

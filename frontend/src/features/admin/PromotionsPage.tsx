@@ -10,10 +10,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
  */
 
 const SLOT_LABELS: Record<string, string> = {
-  HERO_BANNER: "🖼️ Hero Banner",
-  FLASH_DEAL: "⚡ Flash Deal",
-  CATEGORY_TOP: "🔝 Category Top",
-  TRENDING_BADGE: "🔥 Trending Badge",
   HERO_BANNER: "Hero Banner",
   FLASH_DEAL: "Flash Deal",
   CATEGORY_TOP: "Category Top",
@@ -151,7 +147,6 @@ export function AdminPromotionsPage() {
       {actionPromo && actionType && (
         <div className="modal-overlay" onClick={() => { setActionPromo(null); setActionType(null); }}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
-            <h2>{actionType === "approve" ? "✅ Approve Promotion" : "❌ Reject Promotion"}</h2>
             <h2>{actionType === "approve" ? "Approve Promotion" : "Reject Promotion"}</h2>
             <p><strong>Supplier:</strong> {actionPromo.supplier_name}</p>
             <p><strong>Product:</strong> {actionPromo.product_name}</p>
@@ -247,7 +242,6 @@ export function AdminPromotionsPage() {
                     <span className={`promo-status ${STATUS_COLORS[p.status] ?? ""}`}>{p.status}</span>
                   </td>
                   <td className="promo-stats">
-                    👁️{p.impressions_count} 🖱️{p.clicks_count} 🛒{p.orders_count}
                     {p.impressions_count} imp / {p.clicks_count} clicks / {p.orders_count} orders
                   </td>
                   <td>{new Date(p.created_at).toLocaleDateString()}</td>
@@ -262,7 +256,6 @@ export function AdminPromotionsPage() {
                         </button>
                       </>
                     )}
-                    {p.admin_notes && <span className="promo-note" title={p.admin_notes}>📝</span>}
                     {p.admin_notes && <span className="promo-note" title={p.admin_notes}>[Note]</span>}
                   </td>
                 </tr>

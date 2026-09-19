@@ -111,13 +111,17 @@ async def _notify_customs_cleared(db: AsyncSession, packages: list[Package]) -> 
         if package.order_id is not None and package.order_id not in notified_order_ids:
             notified_order_ids.add(package.order_id)
             order = await db.get(Order, package.order_id, options=[selectinload(Order.user)])
-            if order is not None and order.user.phone:
-                await send_whatsapp(
-                    order.user.phone,
-                    customer_customs_cleared_whatsapp_message(
-                        order_number=order.order_number, tracking_number=order.tracking_number
-                    ),
-                )
+            if order is not None:
+                phone = (order.shipping_address or {}).get("phone") if isinstance(order.shipping_address, dict) else None
+                if not phone and order.user:
+                    phone = order.user.phone
+                if phone:
+                    await send_whatsapp(
+                        phone,
+                        customer_customs_cleared_whatsapp_message(
+                            order_number=order.order_number, tracking_number=order.tracking_number
+                        ),
+                    )
         elif package.external_shipment_id is not None and package.external_shipment_id not in notified_shipment_ids:
             notified_shipment_ids.add(package.external_shipment_id)
             shipment = await db.get(ExternalShipment, package.external_shipment_id)

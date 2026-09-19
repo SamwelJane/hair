@@ -239,12 +239,16 @@ async def mark_departed(db: AsyncSession, *, consolidation_id: uuid.UUID, actor_
         if package.order_id is None:
             continue
         order = await db.get(Order, package.order_id, options=[selectinload(Order.user)])
-        if order and order.user.phone and order.user.phone not in notified_phones:
-            notified_phones.add(order.user.phone)
-            await send_whatsapp(
-                order.user.phone,
-                customer_departed_vietnam_whatsapp_message(order_number=order.order_number),
-            )
+        if order:
+            phone = (order.shipping_address or {}).get("phone") if isinstance(order.shipping_address, dict) else None
+            if not phone and order.user:
+                phone = order.user.phone
+            if phone and phone not in notified_phones:
+                notified_phones.add(phone)
+                await send_whatsapp(
+                    phone,
+                    customer_departed_vietnam_whatsapp_message(order_number=order.order_number),
+                )
 
     return consolidation
 

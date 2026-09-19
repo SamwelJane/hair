@@ -46,7 +46,7 @@ export function EquityBankPaymentCard({ orderNumber, amountKes, amountUsd }: Equ
           <li>
             Enter Amount:{" "}
             <strong className="equity-card__amount">
-              KES {Number(amountKes).toLocaleString("en-KE")}
+              KES {Math.round(Number(amountKes)).toLocaleString("en-KE")}
               {amountUsd && <span className="equity-card__usd"> (~${Number(amountUsd).toFixed(2)})</span>}
             </strong>
           </li>
@@ -77,7 +77,7 @@ export function EquityBankPaymentCard({ orderNumber, amountKes, amountUsd }: Equ
           </div>
           <div className="equity-card__row equity-card__row--total">
             <span>Amount</span>
-            <strong>KES {Number(amountKes).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+            <strong>KES {Math.round(Number(amountKes)).toLocaleString("en-KE")}</strong>
           </div>
         </div>
       </div>

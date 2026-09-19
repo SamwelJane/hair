@@ -157,9 +157,15 @@ async def transition_order_status(
     for supplier_order_id in new_supplier_order_ids:
         await enqueue_notify_supplier_new_order(str(supplier_order_id))
 
-    if order.user.phone:
+    customer_phone = None
+    if isinstance(order.shipping_address, dict):
+        customer_phone = order.shipping_address.get("phone")
+    if not customer_phone and order.user:
+        customer_phone = order.user.phone
+
+    if customer_phone:
         await send_whatsapp(
-            order.user.phone,
+            customer_phone,
             customer_order_status_whatsapp_message(
                 order_number=order.order_number,
                 status=to_status.value,
