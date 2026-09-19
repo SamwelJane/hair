@@ -32,7 +32,7 @@ from app.schemas.orders import (
 from app.services import cart_breakdown as cart_breakdown_service
 from app.services import order_state_machine
 from app.services.audit import log_audit
-from app.services.exchange_rate import convert_usd_to_kes, get_usd_to_kes_rate
+from app.services.exchange_rate import convert_usd_to_kes, get_effective_usd_to_kes_rate
 from app.services.order_numbering import generate_order_number
 from app.services.pricing_settings import get_pricing_settings
 from app.services.tracking_numbering import generate_order_tracking_number
@@ -109,9 +109,8 @@ async def checkout(
 
     breakdown, resolved_lines, applied_discount = result.breakdown, result.resolved_lines, result.applied_discount
 
-    exchange_rate = await get_usd_to_kes_rate(db)
-    settings_for_kes = await get_pricing_settings(db)
-    total_amount_kes = convert_usd_to_kes(breakdown.total_amount_usd, exchange_rate, settings_for_kes.kes_adjustment)
+    exchange_rate, _, _, _ = await get_effective_usd_to_kes_rate(db)
+    total_amount_kes = convert_usd_to_kes(breakdown.total_amount_usd, exchange_rate)
     order_number = generate_order_number()
     # Generated once, here, and never regenerated afterwards - see
     # docs/VNKE_ROADMAP.md Phase 3 for why this must happen at order

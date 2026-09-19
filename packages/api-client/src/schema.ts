@@ -3561,6 +3561,10 @@ export interface components {
             total_amount_usd: string;
             /** Total Weight Grams */
             total_weight_grams: number;
+            /** Total Amount Kes */
+            total_amount_kes?: string | null;
+            /** Effective Exchange Rate */
+            effective_exchange_rate?: string | null;
         };
         /** PriceCalculateRequest */
         PriceCalculateRequest: {

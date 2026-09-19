@@ -14,6 +14,10 @@ const SLOT_LABELS: Record<string, string> = {
   FLASH_DEAL: "⚡ Flash Deal",
   CATEGORY_TOP: "🔝 Category Top",
   TRENDING_BADGE: "🔥 Trending Badge",
+  HERO_BANNER: "Hero Banner",
+  FLASH_DEAL: "Flash Deal",
+  CATEGORY_TOP: "Category Top",
+  TRENDING_BADGE: "Trending Badge",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -148,6 +152,7 @@ export function AdminPromotionsPage() {
         <div className="modal-overlay" onClick={() => { setActionPromo(null); setActionType(null); }}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>
             <h2>{actionType === "approve" ? "✅ Approve Promotion" : "❌ Reject Promotion"}</h2>
+            <h2>{actionType === "approve" ? "Approve Promotion" : "Reject Promotion"}</h2>
             <p><strong>Supplier:</strong> {actionPromo.supplier_name}</p>
             <p><strong>Product:</strong> {actionPromo.product_name}</p>
             <p><strong>Slot:</strong> {SLOT_LABELS[actionPromo.slot_type] ?? actionPromo.slot_type}</p>
@@ -243,6 +248,7 @@ export function AdminPromotionsPage() {
                   </td>
                   <td className="promo-stats">
                     👁️{p.impressions_count} 🖱️{p.clicks_count} 🛒{p.orders_count}
+                    {p.impressions_count} imp / {p.clicks_count} clicks / {p.orders_count} orders
                   </td>
                   <td>{new Date(p.created_at).toLocaleDateString()}</td>
                   <td className="action-cell">
@@ -257,6 +263,7 @@ export function AdminPromotionsPage() {
                       </>
                     )}
                     {p.admin_notes && <span className="promo-note" title={p.admin_notes}>📝</span>}
+                    {p.admin_notes && <span className="promo-note" title={p.admin_notes}>[Note]</span>}
                   </td>
                 </tr>
               ))}

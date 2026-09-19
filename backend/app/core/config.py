@@ -61,6 +61,9 @@ class Settings(BaseSettings):
     equity_account_number: str = "0310173604563"
     equity_account_name: str = "Cherubim Express Ltd"
 
+    # Exchange Rate API (optional key for premium provider)
+    exchange_rate_api_key: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hiar Business — Storefront UI & Navigation</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap');
+
+    :root {
+      --ink: #2b2320;
+      --muted: #7a6f68;
+      --border: #e4dcd6;
+      --surface: #ffffff;
+      --bg: #faf6f3;
+      --accent: #b5652f;
+      --accent-hover: #944f22;
+      --danger: #b3352c;
+    }
+
+    body {
+      font-family: "Ubuntu", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+      background: var(--bg);
+      color: var(--ink);
+    }
+
+    .active-nav-btn {
+      background: #b5652f !important;
+      color: #ffffff !important;
+      border-color: #b5652f !important;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-6 antialiased min-h-screen flex flex-col">
+
+  <!-- TOP PREVIEW HEADER & VIEW SWITCHER -->
+  <div class="max-w-6xl w-full mx-auto mb-5 bg-white border border-[#e4dcd6] rounded-xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="px-2.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-200">
+          Customer Surface
+        </span>
+        <span class="text-xs text-[#7a6f68] font-medium">Jumia Typography (Ubuntu 14px) &bull; Zero Emojis</span>
+      </div>
+      <h1 class="text-xl font-bold text-[#2b2320] mt-1">Storefront UI &amp; Navigation Explorer</h1>
+      <p class="text-xs text-[#7a6f68]">Inspect each user flow and see how navigation behaves across devices</p>
+    </div>
+
+    <!-- VIEW SELECTOR BUTTONS -->
+    <div class="flex items-center gap-2 bg-[#faf6f3] p-1.5 rounded-lg border border-[#e4dcd6] text-xs font-semibold">
+      <button onclick="setView('home')" id="btn-home" class="active-nav-btn px-3 py-1.5 rounded-md transition border border-transparent">
+        1. Landing &amp; Nav
+      </button>
+      <button onclick="setView('catalog')" id="btn-catalog" class="px-3 py-1.5 rounded-md transition border border-transparent text-[#7a6f68] hover:text-[#2b2320]">
+        2. Catalog &amp; Filter
+      </button>
+      <button onclick="setView('product')" id="btn-product" class="px-3 py-1.5 rounded-md transition border border-transparent text-[#7a6f68] hover:text-[#2b2320]">
+        3. Product Details
+      </button>
+      <button onclick="setView('payment-modal')" id="btn-payment-modal" class="px-3 py-1.5 rounded-md transition border border-transparent text-[#7a6f68] hover:text-[#2b2320]">
+        4. Checkout Payment Modal
+      </button>
+    </div>
+  </div>
+
+  <!-- STOREFRONT BROWSER SIMULATION CONTAINER -->
+  <div class="max-w-6xl w-full mx-auto bg-white border border-[#e4dcd6] rounded-2xl shadow-md overflow-hidden flex flex-col">
+
+    <!-- ── TOP NAVIGATION BAR (Exact StorefrontLayout.tsx) ────────────────── -->
+    <header class="border-b border-[#e4dcd6] bg-white sticky top-0 z-30">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+        
+        <!-- Brand Logo -->
+        <a href="javascript:void(0)" onclick="setView('home')" class="font-bold text-lg text-[#2b2320] tracking-tight flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-[#b5652f] text-white flex items-center justify-center font-bold text-sm">HB</span>
+          <span>Hiar Business</span>
+        </a>
+
+        <!-- Search Bar with clean SVG Search Icon -->
+        <div class="flex-1 max-w-md relative hidden sm:block">
+          <input
+            type="search"
+            placeholder="Search wigs, extensions, bulk hair..."
+            class="w-full pl-9 pr-4 py-2 text-xs rounded-full border border-[#e4dcd6] focus:outline-none focus:border-[#b5652f] bg-[#faf6f3]"
+          />
+          <button class="absolute left-3 top-2.5 text-[#7a6f68]" aria-label="Search">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Navigation Actions -->
+        <nav class="flex items-center gap-5 text-xs font-semibold text-[#2b2320]">
+          <button onclick="setView('catalog')" class="hover:text-[#b5652f] transition">Shop</button>
+          
+          <!-- Cart with SVG icon & Badge -->
+          <button onclick="setView('payment-modal')" class="relative flex items-center gap-1.5 hover:text-[#b5652f] transition">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"></circle>
+              <circle cx="20" cy="21" r="1"></circle>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+            </svg>
+            <span>Cart</span>
+            <span class="w-4 h-4 rounded-full bg-[#b5652f] text-white text-[10px] font-bold flex items-center justify-center">2</span>
+          </button>
+
+          <button onclick="setView('payment-modal')" class="hidden md:inline-block px-3 py-1.5 rounded-md bg-[#faf6f3] border border-[#e4dcd6] text-xs font-semibold hover:bg-slate-100">
+            Checkout
+          </button>
+
+          <a href="http://localhost:5173/login" target="_blank" class="text-[#b5652f] hover:underline font-bold">
+            Account
+          </a>
+        </nav>
+      </div>
+
+      <!-- Trust Strip (Clean SVGs, No Emojis) -->
+      <div class="bg-[#faf6f3] border-t border-[#e4dcd6] px-4 py-2">
+        <div class="max-w-6xl mx-auto flex flex-wrap items-center justify-between text-xs text-[#7a6f68] gap-3">
+          <div class="flex items-center gap-1.5">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b5652f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <span>Sourced direct from Vietnam factories</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b5652f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <span>Secure M-Pesa STK &amp; Equity Bank Paybill</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#b5652f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span>Tracked door-to-door to Nairobi, Kenya</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── DYNAMIC SURFACE CONTENT ───────────────────────────────────────── -->
+    <main class="flex-1 p-6">
+
+      <!-- =================================================================== -->
+      <!-- VIEW 1: HOME & LANDING PAGE -->
+      <!-- =================================================================== -->
+      <section id="view-home" class="space-y-8">
+        <!-- Hero Banner Carousel Showcase -->
+        <div class="relative rounded-2xl overflow-hidden bg-gradient-to-r from-[#2b2320] to-[#513c33] text-white p-8 md:p-12 shadow-sm">
+          <div class="max-w-md space-y-3">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-[#b5652f]/40 border border-[#b5652f] text-amber-200">
+              Direct Air Freight &bull; Vietnam to Kenya
+            </span>
+            <h2 class="text-3xl font-bold leading-tight">Authentic Vietnamese Raw Hair &amp; HD Lace Wigs</h2>
+            <p class="text-xs text-stone-300 leading-relaxed">
+              Ethically collected, single-donor hair delivered direct from Bac Ninh &amp; Hanoi workshops to Nairobi salons.
+            </p>
+            <div class="pt-2 flex items-center gap-3">
+              <button onclick="setView('catalog')" class="px-5 py-2.5 rounded-lg bg-[#b5652f] hover:bg-[#944f22] text-white font-bold text-xs shadow transition">
+                Shop Collection
+              </button>
+              <button onclick="setView('product')" class="px-4 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-medium text-xs transition border border-white/20">
+                View Best Sellers
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Categories Rails -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-lg text-[#2b2320]">Shop by Hair Category</h3>
+            <button onclick="setView('catalog')" class="text-xs text-[#b5652f] font-semibold hover:underline">View all categories &rarr;</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div onclick="setView('catalog')" class="cursor-pointer group p-4 rounded-xl border border-[#e4dcd6] hover:border-[#b5652f] bg-white transition shadow-sm hover:shadow">
+              <div class="h-28 rounded-lg bg-[#faf6f3] flex items-center justify-center font-bold text-[#b5652f] text-sm group-hover:scale-[1.02] transition">
+                100% Raw Hair Bundles
+              </div>
+              <h4 class="font-bold text-sm mt-3 text-[#2b2320]">Bulk Hair</h4>
+              <p class="text-xs text-[#7a6f68]">Super double drawn, natural black and virgin blonde</p>
+            </div>
+            <div onclick="setView('catalog')" class="cursor-pointer group p-4 rounded-xl border border-[#e4dcd6] hover:border-[#b5652f] bg-white transition shadow-sm hover:shadow">
+              <div class="h-28 rounded-lg bg-[#faf6f3] flex items-center justify-center font-bold text-[#b5652f] text-sm group-hover:scale-[1.02] transition">
+                Full Lace &amp; Glueless Closures
+              </div>
+              <h4 class="font-bold text-sm mt-3 text-[#2b2320]">Wigs</h4>
+              <p class="text-xs text-[#7a6f68]">Custom pre-plucked hairline, HD transparent lace</p>
+            </div>
+            <div onclick="setView('catalog')" class="cursor-pointer group p-4 rounded-xl border border-[#e4dcd6] hover:border-[#b5652f] bg-white transition shadow-sm hover:shadow">
+              <div class="h-28 rounded-lg bg-[#faf6f3] flex items-center justify-center font-bold text-[#b5652f] text-sm group-hover:scale-[1.02] transition">
+                Tape-ins, Wefts &amp; Clip-ins
+              </div>
+              <h4 class="font-bold text-sm mt-3 text-[#2b2320]">Extensions</h4>
+              <p class="text-xs text-[#7a6f68]">Seamless machine wefts with tangle-free cuticle alignment</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Featured Products -->
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-bold text-lg text-[#2b2320]">Featured Hair Products</h3>
+            <span class="text-xs text-[#7a6f68]">Live Dual-Engine FX: USD &amp; KES Cents</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Product Card 1 -->
+            <div class="border border-[#e4dcd6] rounded-xl overflow-hidden bg-white p-4 flex flex-col justify-between hover:shadow-md transition">
+              <div>
+                <div class="h-36 rounded-lg bg-[#faf6f3] flex flex-col items-center justify-center text-center p-3">
+                  <span class="text-xs font-semibold text-[#b5652f] uppercase tracking-wider">Bone Straight</span>
+                  <span class="font-bold text-sm text-[#2b2320] mt-1">Super Double Drawn Weft</span>
+                  <span class="text-[11px] text-[#7a6f68]">100% Single Donor Vietnamese Hair</span>
+                </div>
+                <h4 class="font-bold text-sm text-[#2b2320] mt-3">Super Double Drawn Bone Straight</h4>
+                <div class="flex items-baseline gap-2 mt-2">
+                  <span class="text-base font-black text-[#2b2320]">$120.00</span>
+                  <span class="text-xs font-bold text-[#b5652f]">KES 16,200.00</span>
+                </div>
+                <p class="text-[11px] text-[#7a6f68] mt-1">Ships from Vietnam &bull; 7 days processing</p>
+              </div>
+              <button onclick="setView('product')" class="mt-4 w-full py-2 rounded-lg bg-[#b5652f] hover:bg-[#944f22] text-white font-bold text-xs transition">
+                View Details
+              </button>
+            </div>
+
+            <!-- Product Card 2 -->
+            <div class="border border-[#e4dcd6] rounded-xl overflow-hidden bg-white p-4 flex flex-col justify-between hover:shadow-md transition">
+              <div>
+                <div class="h-36 rounded-lg bg-[#faf6f3] flex flex-col items-center justify-center text-center p-3">
+                  <span class="text-xs font-semibold text-[#b5652f] uppercase tracking-wider">Full Lace</span>
+                  <span class="font-bold text-sm text-[#2b2320] mt-1">Body Wave HD Lace Wig</span>
+                  <span class="text-[11px] text-[#7a6f68]">150% - 200% High Density</span>
+                </div>
+                <h4 class="font-bold text-sm text-[#2b2320] mt-3">Full Lace Wig — Body Wave</h4>
+                <div class="flex items-baseline gap-2 mt-2">
+                  <span class="text-base font-black text-[#2b2320]">$150.00</span>
+                  <span class="text-xs font-bold text-[#b5652f]">KES 20,250.00</span>
+                </div>
+                <p class="text-[11px] text-[#7a6f68] mt-1">Glueless option &bull; Free styling cap</p>
+              </div>
+              <button onclick="setView('product')" class="mt-4 w-full py-2 rounded-lg bg-[#b5652f] hover:bg-[#944f22] text-white font-bold text-xs transition">
+                View Details
+              </button>
+            </div>
+
+            <!-- Product Card 3 -->
+            <div class="border border-[#e4dcd6] rounded-xl overflow-hidden bg-white p-4 flex flex-col justify-between hover:shadow-md transition">
+              <div>
+                <div class="h-36 rounded-lg bg-[#faf6f3] flex flex-col items-center justify-center text-center p-3">
+                  <span class="text-xs font-semibold text-[#b5652f] uppercase tracking-wider">Raw Bulk</span>
+                  <span class="font-bold text-sm text-[#2b2320] mt-1">Natural Straight Temple Hair</span>
+                  <span class="text-[11px] text-[#7a6f68]">Unprocessed Bundles per 100g</span>
+                </div>
+                <h4 class="font-bold text-sm text-[#2b2320] mt-3">Raw Bulk Hair — Natural Straight</h4>
+                <div class="flex items-baseline gap-2 mt-2">
+                  <span class="text-base font-black text-[#2b2320]">$45.00</span>
+                  <span class="text-xs font-bold text-[#b5652f]">KES 6,075.00</span>
+                </div>
+                <p class="text-[11px] text-[#7a6f68] mt-1">Can bleach to #613 blonde &bull; In stock</p>
+              </div>
+              <button onclick="setView('payment-modal')" class="mt-4 w-full py-2 rounded-lg bg-[#2b2320] hover:bg-black text-white font-bold text-xs transition">
+                Direct Checkout
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- VIEW 2: CATALOG & FILTER -->
+      <!-- =================================================================== -->
+      <section id="view-catalog" class="hidden space-y-6">
+        <div class="flex items-center justify-between border-b border-[#e4dcd6] pb-4">
+          <div>
+            <h2 class="text-xl font-bold text-[#2b2320]">Hair Products Catalog</h2>
+            <p class="text-xs text-[#7a6f68]">Showing authentic Vietnamese hair direct from verified factories</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-[#7a6f68]">Sort by:</span>
+            <select class="text-xs p-1.5 rounded border border-[#e4dcd6] bg-white">
+              <option>Price: Low to High</option>
+              <option>Price: High to Low</option>
+              <option>Fastest Delivery</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <!-- Filters Sidebar -->
+          <div class="space-y-5 text-xs text-[#2b2320]">
+            <div class="p-4 rounded-xl border border-[#e4dcd6] bg-[#faf6f3]">
+              <h4 class="font-bold text-sm mb-3">Categories</h4>
+              <div class="space-y-1.5 text-[#7a6f68]">
+                <label class="flex items-center gap-2"><input type="checkbox" checked> Wigs (5)</label>
+                <label class="flex items-center gap-2"><input type="checkbox" checked> Extensions (4)</label>
+                <label class="flex items-center gap-2"><input type="checkbox" checked> Bulk Hair (3)</label>
+              </div>
+
+              <h4 class="font-bold text-sm mt-4 mb-3">Length</h4>
+              <div class="space-y-1.5 text-[#7a6f68]">
+                <label class="flex items-center gap-2"><input type="checkbox"> 14 inch</label>
+                <label class="flex items-center gap-2"><input type="checkbox" checked> 18 inch</label>
+                <label class="flex items-center gap-2"><input type="checkbox"> 22 inch</label>
+                <label class="flex items-center gap-2"><input type="checkbox"> 26 inch</label>
+              </div>
+
+              <h4 class="font-bold text-sm mt-4 mb-3">Drawn Quality</h4>
+              <div class="space-y-1.5 text-[#7a6f68]">
+                <label class="flex items-center gap-2"><input type="checkbox" checked> Super Double Drawn</label>
+                <label class="flex items-center gap-2"><input type="checkbox"> Double Drawn</label>
+                <label class="flex items-center gap-2"><input type="checkbox"> Single Drawn</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Products Listing -->
+          <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="border border-[#e4dcd6] rounded-xl p-4 bg-white flex flex-col justify-between">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-[#b5652f] tracking-wide">Category: Wigs</span>
+                <h4 class="font-bold text-sm text-[#2b2320] mt-1">Glueless Closure Wig — Curly</h4>
+                <p class="text-xs text-[#7a6f68] mt-1">4x4 HD closure with tight curl pattern. No glue needed with elastic band.</p>
+                <div class="mt-3 flex items-baseline gap-2">
+                  <span class="text-base font-bold text-[#2b2320]">$100.00</span>
+                  <span class="text-xs font-bold text-[#b5652f]">KES 13,500.00</span>
+                </div>
+              </div>
+              <button onclick="setView('product')" class="mt-4 w-full py-1.5 rounded-lg border border-[#b5652f] text-[#b5652f] hover:bg-[#b5652f] hover:text-white font-bold text-xs transition">
+                Select Options
+              </button>
+            </div>
+
+            <div class="border border-[#e4dcd6] rounded-xl p-4 bg-white flex flex-col justify-between">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-[#b5652f] tracking-wide">Category: Extensions</span>
+                <h4 class="font-bold text-sm text-[#2b2320] mt-1">Seamless Tape-In Extensions</h4>
+                <p class="text-xs text-[#7a6f68] mt-1">Invisible polyurethane tape tabs, reusable up to 3 installs with medical tape.</p>
+                <div class="mt-3 flex items-baseline gap-2">
+                  <span class="text-base font-bold text-[#2b2320]">$70.00</span>
+                  <span class="text-xs font-bold text-[#b5652f]">KES 9,450.00</span>
+                </div>
+              </div>
+              <button onclick="setView('product')" class="mt-4 w-full py-1.5 rounded-lg border border-[#b5652f] text-[#b5652f] hover:bg-[#b5652f] hover:text-white font-bold text-xs transition">
+                Select Options
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- VIEW 3: PRODUCT DETAIL PAGE -->
+      <!-- =================================================================== -->
+      <section id="view-product" class="hidden space-y-6">
+        <button onclick="setView('catalog')" class="text-xs text-[#b5652f] font-semibold hover:underline">
+          &larr; Back to catalog
+        </button>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- Gallery -->
+          <div class="space-y-3">
+            <div class="h-72 rounded-2xl bg-[#faf6f3] border border-[#e4dcd6] flex flex-col items-center justify-center p-6 text-center">
+              <span class="text-xs font-bold text-[#b5652f] uppercase tracking-wider">Single-Donor Vietnamese Hair</span>
+              <h3 class="text-xl font-bold text-[#2b2320] mt-1">Full Lace Wig — Body Wave</h3>
+              <p class="text-xs text-[#7a6f68] max-w-sm mt-2">
+                100% cuticle-intact hair sourced direct from northern Vietnam temple donors.
+              </p>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center text-xs">
+              <div class="p-2 border rounded-lg bg-white border-[#b5652f] font-semibold text-[#b5652f]">Frontal View</div>
+              <div class="p-2 border rounded-lg bg-white border-[#e4dcd6] text-[#7a6f68]">HD Lace Close-up</div>
+              <div class="p-2 border rounded-lg bg-white border-[#e4dcd6] text-[#7a6f68]">Hairline &amp; Cap</div>
+            </div>
+          </div>
+
+          <!-- Configuration & Buy Box -->
+          <div class="space-y-4">
+            <div>
+              <span class="text-xs text-[#7a6f68]">Item Code: WIG-BODYWAVE-01</span>
+              <h2 class="text-2xl font-bold text-[#2b2320] mt-0.5">Full Lace Wig — Body Wave</h2>
+              <div class="flex items-baseline gap-3 mt-2">
+                <span class="text-2xl font-black text-[#2b2320]">$150.00</span>
+                <span class="text-sm font-bold text-[#b5652f]">KES 20,250.00</span>
+                <span class="text-[11px] text-[#7a6f68]">(@ 1 USD = KES 135.00)</span>
+              </div>
+            </div>
+
+            <p class="text-xs text-[#7a6f68] leading-relaxed">
+              Full lace construction allows versatile parting in any direction. Body wave texture, glueless option with adjustable straps.
+            </p>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="font-bold text-[#2b2320] block mb-1">Select Length</label>
+                <div class="flex gap-2">
+                  <button class="px-3 py-1.5 rounded-lg border border-[#b5652f] bg-amber-50 text-[#b5652f] font-bold">18 inch</button>
+                  <button class="px-3 py-1.5 rounded-lg border border-[#e4dcd6] bg-white text-[#7a6f68]">22 inch (+$35)</button>
+                  <button class="px-3 py-1.5 rounded-lg border border-[#e4dcd6] bg-white text-[#7a6f68]">26 inch (+$70)</button>
+                </div>
+              </div>
+
+              <div>
+                <label class="font-bold text-[#2b2320] block mb-1">Density</label>
+                <div class="flex gap-2">
+                  <button class="px-3 py-1.5 rounded-lg border border-[#b5652f] bg-amber-50 text-[#b5652f] font-bold">150% Density</button>
+                  <button class="px-3 py-1.5 rounded-lg border border-[#e4dcd6] bg-white text-[#7a6f68]">180% Density</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-3 bg-[#faf6f3] rounded-xl border border-[#e4dcd6] text-xs space-y-1">
+              <div class="flex justify-between"><span>Origin:</span><strong>Vietnam (Bac Ninh)</strong></div>
+              <div class="flex justify-between"><span>Processing Time:</span><strong>12 business days</strong></div>
+              <div class="flex justify-between"><span>Air Freight to Kenya:</span><strong>$60.00 / kg</strong></div>
+            </div>
+
+            <button onclick="setView('payment-modal')" class="w-full py-3 rounded-xl bg-[#b5652f] hover:bg-[#944f22] text-white font-bold text-sm shadow transition">
+              Proceed to Checkout &amp; Pay
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- VIEW 4: CHECKOUT PAYMENT MODAL (Dedicated Interactive View) -->
+      <!-- =================================================================== -->
+      <section id="view-payment-modal" class="hidden">
+        <div class="max-w-xl mx-auto bg-white border border-[#e4dcd6] rounded-2xl shadow-xl overflow-hidden">
+          
+          <!-- Modal Header -->
+          <div class="px-5 py-4 border-b border-[#e4dcd6] flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-base text-[#2b2320]">Complete Your Payment</h3>
+              <p class="text-xs text-[#7a6f68]">Payment details are only visible during active cart checkout</p>
+            </div>
+            <button onclick="setView('home')" class="text-[#7a6f68] hover:text-[#2b2320] p-1">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <div class="p-5 space-y-5">
+            <!-- Total Payable Amount Banner -->
+            <div class="bg-[#faf6f3] border border-[#e4dcd6] rounded-xl p-4 text-center">
+              <div class="text-[11px] text-[#7a6f68] font-semibold uppercase tracking-wider">Total Payable Amount</div>
+              <div class="text-2xl font-black text-[#2b2320] mt-1">$200.00</div>
+              <div class="text-base font-bold text-[#b5652f]">KES 27,000.00</div>
+              <div class="text-[11px] text-[#7a6f68] mt-1">Effective Exchange Rate: 1 USD = KES 135.00</div>
+            </div>
+
+            <!-- Payment Method Tabs -->
+            <div class="grid grid-cols-2 gap-2 text-xs font-bold">
+              <button onclick="setPaymentTab('mpesa')" id="tab-mpesa" class="py-2.5 rounded-lg border-2 border-[#00a651] bg-emerald-50 text-[#15803d] transition text-center">
+                M-Pesa STK Push
+              </button>
+              <button onclick="setPaymentTab('paybill')" id="tab-paybill" class="py-2.5 rounded-lg border border-[#e4dcd6] bg-white text-[#7a6f68] transition text-center">
+                Equity Bank Paybill
+              </button>
+            </div>
+
+            <!-- Tab 1: M-Pesa STK Push -->
+            <div id="content-mpesa" class="space-y-3">
+              <p class="text-xs text-[#7a6f68]">
+                An automated payment prompt will appear on your Safaricom phone screen. Simply enter your M-Pesa PIN to authorize payment.
+              </p>
+              <div class="space-y-1">
+                <label class="text-xs font-semibold text-[#2b2320] block">Safaricom Phone Number</label>
+                <input
+                  type="tel"
+                  value="0712345678"
+                  class="w-full text-xs p-2.5 rounded-lg border border-[#e4dcd6] focus:outline-none focus:border-[#00a651]"
+                  placeholder="e.g. 0712345678 or 254712345678"
+                />
+              </div>
+              <button onclick="simulateStkPush()" class="w-full py-3 rounded-lg bg-[#00a651] hover:bg-[#008d44] text-white font-bold text-xs shadow transition">
+                Send STK Prompt for KES 27,000.00
+              </button>
+              <div id="stk-status" class="hidden text-xs text-center p-2 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                Prompt dispatched! Check your phone screen now.
+              </div>
+            </div>
+
+            <!-- Tab 2: Equity Bank Paybill -->
+            <div id="content-paybill" class="hidden space-y-3">
+              <div class="bg-[#faf6f3] border border-[#e4dcd6] rounded-xl p-3.5 space-y-2.5 text-xs">
+                <div class="flex items-center justify-between pb-2 border-b border-stone-200">
+                  <span class="text-[#7a6f68]">Paybill Business No:</span>
+                  <div class="flex items-center gap-2">
+                    <strong class="font-mono text-sm text-[#2b2320]">247247</strong>
+                    <button onclick="copyText('247247', this)" class="px-2 py-0.5 rounded border border-[#e4dcd6] bg-white text-[11px] font-semibold text-[#2b2320]">
+                      Copy
+                    </button>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pb-2 border-b border-stone-200">
+                  <span class="text-[#7a6f68]">Account Number:</span>
+                  <div class="flex items-center gap-2">
+                    <strong class="font-mono text-sm text-[#2b2320]">0310173604563</strong>
+                    <button onclick="copyText('0310173604563', this)" class="px-2 py-0.5 rounded border border-[#e4dcd6] bg-white text-[11px] font-semibold text-[#2b2320]">
+                      Copy
+                    </button>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between pb-2 border-b border-stone-200">
+                  <span class="text-[#7a6f68]">Account Name:</span>
+                  <strong class="text-[#2b2320]">Cherubim Express Ltd</strong>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-[#7a6f68]">Exact Amount:</span>
+                  <div class="flex items-center gap-2">
+                    <strong class="font-mono text-sm text-[#b5652f]">KES 27,000.00</strong>
+                    <button onclick="copyText('27000.00', this)" class="px-2 py-0.5 rounded border border-[#e4dcd6] bg-white text-[11px] font-semibold text-[#2b2320]">
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-[11px] text-[#7a6f68] leading-relaxed">
+                <strong>How to pay:</strong> Open M-Pesa &gt; Lipa na M-Pesa &gt; Pay Bill &gt; Enter <strong>247247</strong> &gt; Account <strong>0310173604563</strong> &gt; Amount <strong>27,000</strong> &gt; Enter PIN.
+              </div>
+
+              <button onclick="alert('Order placed! Verification team will confirm payment within 1-2 hours.')" class="w-full py-3 rounded-lg bg-[#a32a29] hover:bg-[#852221] text-white font-bold text-xs shadow transition">
+                I Have Completed Payment / Place Order
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ── STOREFRONT FOOTER (Strictly Zero Payment Info) ────────────────── -->
+    <footer class="bg-white border-t border-[#e4dcd6] p-6 text-xs text-[#7a6f68]">
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-6">
+        <div>
+          <strong class="text-sm text-[#2b2320] block mb-2">Hiar Business</strong>
+          <p>Premium Vietnamese hair delivered direct to Kenya with verified tracking.</p>
+        </div>
+        <div>
+          <strong class="text-sm text-[#2b2320] block mb-2">Shop</strong>
+          <ul class="space-y-1">
+            <li><a href="javascript:void(0)" onclick="setView('catalog')" class="hover:underline">All Products</a></li>
+            <li><a href="javascript:void(0)" onclick="setView('catalog')" class="hover:underline">HD Lace Wigs</a></li>
+            <li><a href="javascript:void(0)" onclick="setView('catalog')" class="hover:underline">Bulk Hair Bundles</a></li>
+            <li><a href="javascript:void(0)" onclick="setView('catalog')" class="hover:underline">Seamless Extensions</a></li>
+          </ul>
+        </div>
+        <div>
+          <strong class="text-sm text-[#2b2320] block mb-2">Customer Care</strong>
+          <ul class="space-y-1">
+            <li><a href="javascript:void(0)" class="hover:underline">Order Tracking</a></li>
+            <li><a href="javascript:void(0)" class="hover:underline">Shipping &amp; Customs Policy</a></li>
+            <li><a href="javascript:void(0)" class="hover:underline">Help &amp; FAQs</a></li>
+          </ul>
+        </div>
+        <div>
+          <strong class="text-sm text-[#2b2320] block mb-2">Nairobi Hub</strong>
+          <p>support@hiarbusiness.com</p>
+          <p class="mt-1">Nairobi, Kenya</p>
+          <p class="text-[11px] text-emerald-700 font-semibold mt-2">
+            Secure payments handled privately via encrypted checkout
+          </p>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-[#e4dcd6] text-center text-[11px]">
+        &copy; 2026 Hiar Business Ltd. All rights reserved. Jumia Kenya Ubuntu Typography Scale.
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    function setView(view) {
+      const views = ['home', 'catalog', 'product', 'payment-modal'];
+      views.forEach(v => {
+        const el = document.getElementById('view-' + v);
+        const btn = document.getElementById('btn-' + v);
+        if (el) el.classList.add('hidden');
+        if (btn) {
+          btn.classList.remove('active-nav-btn');
+          btn.classList.add('text-[#7a6f68]');
+        }
+      });
+
+      const targetEl = document.getElementById('view-' + view);
+      const targetBtn = document.getElementById('btn-' + view);
+      if (targetEl) targetEl.classList.remove('hidden');
+      if (targetBtn) {
+        targetBtn.classList.add('active-nav-btn');
+        targetBtn.classList.remove('text-[#7a6f68]');
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function setPaymentTab(tab) {
+      const isMpesa = tab === 'mpesa';
+      document.getElementById('content-mpesa').classList.toggle('hidden', !isMpesa);
+      document.getElementById('content-paybill').classList.toggle('hidden', isMpesa);
+
+      const tabMpesa = document.getElementById('tab-mpesa');
+      const tabPaybill = document.getElementById('tab-paybill');
+
+      if (isMpesa) {
+        tabMpesa.className = 'py-2.5 rounded-lg border-2 border-[#00a651] bg-emerald-50 text-[#15803d] transition text-center';
+        tabPaybill.className = 'py-2.5 rounded-lg border border-[#e4dcd6] bg-white text-[#7a6f68] transition text-center';
+      } else {
+        tabPaybill.className = 'py-2.5 rounded-lg border-2 border-[#a32a29] bg-rose-50 text-[#a32a29] transition text-center';
+        tabMpesa.className = 'py-2.5 rounded-lg border border-[#e4dcd6] bg-white text-[#7a6f68] transition text-center';
+      }
+    }
+
+    function copyText(text, btn) {
+      navigator.clipboard.writeText(text);
+      const prev = btn.innerText;
+      btn.innerText = 'Copied!';
+      btn.classList.add('bg-emerald-100', 'text-emerald-800');
+      setTimeout(() => {
+        btn.innerText = prev;
+        btn.classList.remove('bg-emerald-100', 'text-emerald-800');
+      }, 1500);
+    }
+
+    function simulateStkPush() {
+      const statusEl = document.getElementById('stk-status');
+      statusEl.classList.remove('hidden');
+      statusEl.innerText = 'Sending STK Push prompt to 0712345678...';
+      setTimeout(() => {
+        statusEl.innerText = 'Prompt sent! Enter your M-Pesa PIN on your phone to authorize KES 27,000.00.';
+      }, 1200);
+    }
+  </script>
+</body>
+</html>

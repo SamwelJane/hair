@@ -102,6 +102,8 @@ export function ReceivePackagePage() {
             <option value="">Select condition (optional)</option>
             <option value="GOOD">✅ Good — no visible damage</option>
             <option value="DAMAGED">⚠️ Damaged — visible damage noted</option>
+            <option value="GOOD">Good — no visible damage</option>
+            <option value="DAMAGED">Damaged — visible damage noted</option>
           </select>
         </label>
 
@@ -118,6 +120,7 @@ export function ReceivePackagePage() {
 
         <button type="submit" className="btn btn--primary btn--lg" disabled={receive.isPending}>
           {receive.isPending ? "Receiving…" : "📥 Receive Package"}
+          {receive.isPending ? "Receiving…" : "Receive Package"}
         </button>
       </form>
 
@@ -133,11 +136,13 @@ export function ReceivePackagePage() {
         <div className="callout callout--success" style={{ marginTop: "1rem" }}>
           <p>
             ✅ Received <strong>{receive.data.package_code}</strong> — tracking{" "}
+            Received <strong>{receive.data.package_code}</strong> — tracking{" "}
             <strong>{receive.data.tracking_number}</strong>
           </p>
           {receive.data.weight_kg && (
             <p>
               ⚖️ Weight: <strong>{receive.data.weight_grams} g</strong>{" "}
+              Weight: <strong>{receive.data.weight_grams} g</strong>{" "}
               <span className="muted">({receive.data.weight_kg} kg)</span>
             </p>
           )}

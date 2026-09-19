@@ -41,14 +41,14 @@ _ORDER_NUMBER_RE = re.compile(r"\bORD-\d{8}-\d{5}\b", re.IGNORECASE)
 
 _STATUS_DESCRIPTIONS: dict[str, str] = {
     "PENDING_PAYMENT":        "Waiting for your payment confirmation.",
-    "PAID":                   "Payment confirmed ✅ — we're preparing your order.",
+    "PAID":                   "Payment confirmed — we're preparing your order.",
     "SENT_TO_SUPPLIER":       "Order sent to the factory for production.",
-    "SUPPLIER_PROCESSING":    "Your hair is being crafted 💇 — this can take 7–14 days.",
-    "READY_FOR_PICKUP":       "Production complete! Being packed and dispatched from Vietnam.",
+    "SUPPLIER_PROCESSING":    "Your hair is being crafted — this can take 7–14 days.",
+    "READY_FOR_PICKUP":       "Production complete. Being packed and dispatched from Vietnam.",
     "RECEIVED_AT_OFFICE":     "Arrived at our Vietnam office, ready for air freight.",
-    "SHIPPED_INTERNATIONALLY":"In the air ✈️ — on its way to Kenya!",
-    "IN_TRANSIT":             "Clearing customs in Kenya 🇰🇪.",
-    "DELIVERED":              "Delivered 🎉 — we hope you love your hair!",
+    "SHIPPED_INTERNATIONALLY":"Dispatched internationally — on its way to Kenya.",
+    "IN_TRANSIT":             "Clearing customs in Kenya.",
+    "DELIVERED":              "Delivered — thank you for choosing Hiar Business.",
     "CANCELLED":              "Order cancelled. Contact us if this was a mistake.",
 }
 
@@ -117,7 +117,7 @@ async def _handle_inbound_text(*, db: AsyncSession, sender: str, body: str) -> N
         reply = await _build_status_reply(db, order_number)
     elif upper in ("HELP", "HI", "HELLO", "STATUS"):
         reply = (
-            "👋 *Hi! Welcome to Hiar Business.*\n\n"
+            "*Hi! Welcome to Hiar Business.*\n\n"
             "To check your order status, simply send your order number "
             "(e.g. *ORD-20250918-00123*).\n\n"
             "You can find your order number in your confirmation email or "
@@ -125,7 +125,7 @@ async def _handle_inbound_text(*, db: AsyncSession, sender: str, body: str) -> N
         )
     else:
         reply = (
-            "📦 *Hiar Business Support*\n\n"
+            "*Hiar Business Support*\n\n"
             "To track your order, please reply with your order number "
             "(e.g. *ORD-20250918-00123*).\n\n"
             "If you need further assistance, call us at +254 700 000 000."
@@ -143,7 +143,7 @@ async def _build_status_reply(db: AsyncSession, order_number: str) -> str:
     )
     if order is None:
         return (
-            f"❌ Order *{order_number}* not found.\n\n"
+            f"[NOT FOUND] Order *{order_number}* was not found.\n\n"
             "Please check the order number and try again, or contact us "
             "at +254 700 000 000."
         )
@@ -158,10 +158,10 @@ async def _build_status_reply(db: AsyncSession, order_number: str) -> str:
             step_label = group["label"]
             break
 
-    tracking_line = f"\n📍 Tracking: `{order.tracking_number}`" if order.tracking_number else ""
+    tracking_line = f"\nTracking Number: `{order.tracking_number}`" if order.tracking_number else ""
 
     return (
-        f"📦 *Order Status — {order_number}*\n\n"
+        f"[ORDER STATUS] {order_number}\n\n"
         f"Stage: *{step_label}*\n"
         f"Status: *{status.replace('_', ' ').title()}*\n"
         f"{description}{tracking_line}\n\n"

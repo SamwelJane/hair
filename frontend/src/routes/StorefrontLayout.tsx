@@ -46,14 +46,17 @@ export function StorefrontLayout() {
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search products"
             />
-            <button type="submit" aria-label="Search">🔍</button>
+            <button type="submit" aria-label="Search">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </button>
           </form>
 
           {/* Right actions */}
           <nav className="sf-topnav__actions" aria-label="Site navigation">
             <Link to="/products">Shop</Link>
-            <Link to="/cart" aria-label={`Cart, ${itemCount} items`}>
-              🛒{itemCount > 0 && <span className="sf-topnav__badge">{itemCount}</span>}
+            <Link to="/cart" aria-label={`Cart, ${itemCount} items`} style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+              {itemCount > 0 && <span className="sf-topnav__badge">{itemCount}</span>}
             </Link>
 
             {isAuthenticated ? (
@@ -80,7 +83,11 @@ export function StorefrontLayout() {
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
           >
-            {menuOpen ? "✕" : "☰"}
+            {menuOpen ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            )}
           </button>
         </div>
 
@@ -134,14 +141,14 @@ export function StorefrontLayout() {
             <Link to="/products?category=Bulk+Hair">Bulk Hair</Link>
           </div>
           <div className="sf-footer__col">
-            <strong>Help</strong>
-            <Link to="/track/:trackingNumber">Track Order</Link>
+            <strong>Support</strong>
+            <Link to="/track">Track Order</Link>
             <Link to="/login">My Account</Link>
           </div>
           <div className="sf-footer__col">
-            <strong>Payment</strong>
-            <p>Equity Bank Paybill: <strong>247247</strong></p>
-            <p>Account: <strong>0310173604563</strong></p>
+            <strong>Contact</strong>
+            <p>support@hiarbusiness.com</p>
+            <p>Nairobi, Kenya</p>
           </div>
         </div>
         <p className="sf-footer__copy">&copy; {new Date().getFullYear()} Hiar Business. All rights reserved.</p>

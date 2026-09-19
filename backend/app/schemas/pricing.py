@@ -32,3 +32,5 @@ class PriceBreakdownOut(BaseModel):
     discount_usd: Decimal
     total_amount_usd: Decimal
     total_weight_grams: int
+    total_amount_kes: Decimal | None = None
+    effective_exchange_rate: Decimal | None = None

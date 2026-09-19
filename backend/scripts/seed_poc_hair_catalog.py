@@ -456,6 +456,7 @@ async def _get_or_create_supplier(db: AsyncSession, data: dict) -> Supplier:
             name=data["name"],
             email=user_email,
             hashed_password=hash_password("SupplierPOC2025!"),
+            password_hash=hash_password("SupplierPOC2025!"),
             role=UserRole.SUPPLIER,
             is_active=True,
         )
@@ -482,10 +483,29 @@ async def _get_or_create_category(db: AsyncSession, name: str) -> Category:
     if existing:
         return existing
     cat = Category(name=name, slug=name.lower().replace(" ", "-"), description=f"{name} — Vietnamese hair products")
+    cat = Category(name=name, slug=name.lower().replace(" ", "-"), is_featured=True)
     db.add(cat)
     await db.flush()
     print(f"  ✅ Created category: {name}")
     return cat
+
+
+async def _get_or_create_user(db: AsyncSession, name: str, email: str, password: str, role: UserRole) -> User:
+    user = (await db.execute(select(User).where(User.email == email))).scalar_one_or_none()
+    if user:
+        return user
+    from app.core.security import hash_password
+    user = User(
+        name=name,
+        email=email,
+        password_hash=hash_password(password),
+        role=role,
+        is_active=True,
+    )
+    db.add(user)
+    await db.flush()
+    print(f"  ✅ Created user: {email} ({role.value})")
+    return user
 
 
 async def _create_product(
@@ -494,10 +514,12 @@ async def _create_product(
     category: Category,
     data: dict,
 ) -> None:
+) -> Product | None:
     existing = (await db.execute(select(Product).where(Product.slug == data["slug"]))).scalar_one_or_none()
     if existing:
         print(f"  ↳ Product already exists: {data['name']}")
         return
+        return existing
 
     product = Product(
         name=data["name"],
@@ -540,27 +562,83 @@ async def _create_product(
     # Images (max 3)
     for img_url in data.get("images", [])[:3]:
         db.add(ProductImage(product_id=product.id, url=img_url, is_primary=False))
+        db.add(ProductImage(product_id=product.id, url=img_url))
 
     print(f"  ✅ Created product: {data['name']} ({len(data.get('variants', []))} variants, {len(data.get('images', [])[:3])} images)")
+    return product
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 async def seed() -> None:
+    from app.models.pricing import CountryShippingRule, ExchangeRate, PricingSetting
+    from app.models.promotions import SupplierPromotionRequest
+    from app.models.enums import PromotionSlot, PromotionStatus
+    from datetime import UTC, datetime, timedelta
+
     engine = create_async_engine(settings.database_url, echo=False)
     async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as db:
         print("\n🌱 Seeding POC Vietnam hair catalog...\n")
+        print("\n🌱 Seeding POC Vietnam hair catalog & platform data...\n")
 
         # Categories
         print("📦 Categories")
+        # 1. System Users
+        print("👥 System Users")
+        admin = await _get_or_create_user(db, "System Admin", "admin@hiarbusiness.com", "AdminPass123!", UserRole.ADMIN)
+        await _get_or_create_user(db, "Vietnam Warehouse Ops", "warehouse@cherubim.vn", "WarehousePass123!", UserRole.WAREHOUSE)
+        await _get_or_create_user(db, "Kenya Operations", "kenyaops@hiarbusiness.com", "KenyaOpsPass123!", UserRole.KENYA_OPS)
+        await _get_or_create_user(db, "Nairobi Salon Buyer", "customer@example.com", "CustomerPass123!", UserRole.CUSTOMER)
+        await db.commit()
+
+        # 2. Pricing & Exchange Rate
+        print("\n⚙️ Pricing & FX Rates")
+        pricing_row = (await db.execute(select(PricingSetting).where(PricingSetting.id == "global"))).scalar_one_or_none()
+        if not pricing_row:
+            db.add(PricingSetting(
+                id="global",
+                commission_pct=Decimal("15.00"),
+                shipping_per_kg_usd=Decimal("60.00"),
+                packaging_fee_usd=Decimal("2.00"),
+                kes_adjustment=Decimal("0.00"),
+            ))
+            print("  ✅ Configured global pricing: 15% margin, $60/kg shipping, $2 packaging")
+
+        fx_row = (await db.execute(select(ExchangeRate).where(ExchangeRate.base_currency == "USD", ExchangeRate.target_currency == "KES"))).scalar_one_or_none()
+        if not fx_row:
+            db.add(ExchangeRate(
+                base_currency="USD",
+                target_currency="KES",
+                rate=Decimal("130.0000"),
+                updated_by_id=admin.id,
+            ))
+            print("  ✅ Configured USD -> KES exchange rate: 130.00")
+
+        shipping_rule = (await db.execute(select(CountryShippingRule).where(CountryShippingRule.country_code == "KE"))).scalar_one_or_none()
+        if not shipping_rule:
+            db.add(CountryShippingRule(
+                country_code="KE",
+                country_name="Kenya",
+                base_fee_usd=Decimal("0.00"),
+                per_kg_fee_usd=Decimal("60.00"),
+                customs_rate_pct=Decimal("0.00"),
+                estimated_days_min=5,
+                estimated_days_max=8,
+            ))
+            print("  ✅ Configured Kenya shipping rule: $60/kg flat air freight & customs")
+        await db.commit()
+
+        # 3. Categories
+        print("\n📦 Categories")
         categories: dict[str, Category] = {}
         for cat_name in CATEGORIES:
             categories[cat_name] = await _get_or_create_category(db, cat_name)
         await db.commit()
 
         # Suppliers
+        # 4. Suppliers
         print("\n🏭 Suppliers")
         suppliers: list[Supplier] = []
         for supplier_data in SUPPLIERS:
@@ -569,14 +647,62 @@ async def seed() -> None:
         await db.commit()
 
         # Products
+        # 5. Products
         print("\n💇 Products")
+        created_products: list[Product] = []
         for product_data in PRODUCTS:
             supplier = suppliers[product_data["supplier_idx"]]
             category = categories[product_data["category"]]
             await _create_product(db, supplier, category, product_data)
+            p = await _create_product(db, supplier, category, product_data)
+            if p:
+                created_products.append(p)
         await db.commit()
 
         print("\n✨ Seed complete!\n")
+        # 6. Sample Promotions (Pending & Active)
+        print("\n🎯 Sample Promotions")
+        if created_products:
+            p1 = created_products[0]
+            existing_promo = (await db.execute(select(SupplierPromotionRequest).where(SupplierPromotionRequest.product_id == p1.id))).scalar_one_or_none()
+            if not existing_promo:
+                promo = SupplierPromotionRequest(
+                    supplier_id=p1.supplier_id,
+                    product_id=p1.id,
+                    slot_type=PromotionSlot.FLASH_DEAL,
+                    rate_usd=Decimal("80.00"),
+                    duration_days=7,
+                    status=PromotionStatus.PENDING,
+                    custom_headline="Flash Sale 15% OFF for Nairobi Salons",
+                )
+                db.add(promo)
+                print(f"  ✅ Created PENDING promotion for {p1.name}")
+
+            if len(created_products) > 1:
+                p2 = created_products[1]
+                existing_promo2 = (await db.execute(select(SupplierPromotionRequest).where(SupplierPromotionRequest.product_id == p2.id))).scalar_one_or_none()
+                if not existing_promo2:
+                    now = datetime.now(UTC)
+                    promo2 = SupplierPromotionRequest(
+                        supplier_id=p2.supplier_id,
+                        product_id=p2.id,
+                        slot_type=PromotionSlot.HERO_BANNER,
+                        rate_usd=Decimal("150.00"),
+                        duration_days=7,
+                        status=PromotionStatus.ACTIVE,
+                        start_date=now,
+                        end_date=now + timedelta(days=7),
+                        custom_headline="Premium Single-Donor Hair in Bulk",
+                        reviewed_by_id=admin.id,
+                        impressions_count=1240,
+                        clicks_count=88,
+                        orders_count=6,
+                    )
+                    db.add(promo2)
+                    print(f"  ✅ Created ACTIVE promotion for {p2.name}")
+            await db.commit()
+
+        print("\n✨ Platform seed complete! All systems ready for testing.\n")
 
     await engine.dispose()
 

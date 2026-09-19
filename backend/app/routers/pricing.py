@@ -17,12 +17,17 @@ from app.services.pricing_engine import (
     ShippingRuleInput,
     calculate_price,
 )
+from app.services.exchange_rate import convert_usd_to_kes, get_effective_usd_to_kes_rate
 from app.services.pricing_settings import find_active_discount_code, get_pricing_settings
 
 router = APIRouter(tags=["pricing"])
 
 
-def _to_breakdown_out(breakdown) -> PriceBreakdownOut:  # type: ignore[no-untyped-def]
+def _to_breakdown_out(
+    breakdown,
+    total_amount_kes: Decimal | None = None,
+    effective_exchange_rate: Decimal | None = None,
+) -> PriceBreakdownOut:  # type: ignore[no-untyped-def]
     return PriceBreakdownOut(
         subtotal_usd=breakdown.subtotal_usd,
         shipping_fee_usd=breakdown.shipping_fee_usd,
@@ -31,6 +36,8 @@ def _to_breakdown_out(breakdown) -> PriceBreakdownOut:  # type: ignore[no-untype
         discount_usd=breakdown.discount_usd,
         total_amount_usd=breakdown.total_amount_usd,
         total_weight_grams=breakdown.total_weight_grams,
+        total_amount_kes=total_amount_kes,
+        effective_exchange_rate=effective_exchange_rate,
     )
 
 
@@ -51,7 +58,14 @@ async def checkout_summary(payload: CheckoutSummaryRequest, db: AsyncSession = D
     except (cart_breakdown_service.ShippingRuleNotFoundError, cart_breakdown_service.ProductNotFoundError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return _to_breakdown_out(result.breakdown)
+    effective_rate, _, _, _ = await get_effective_usd_to_kes_rate(db)
+    total_amount_kes = convert_usd_to_kes(result.breakdown.total_amount_usd, effective_rate)
+
+    return _to_breakdown_out(
+        result.breakdown,
+        total_amount_kes=total_amount_kes,
+        effective_exchange_rate=effective_rate,
+    )
 
 
 @router.post("/pricing/calculate", response_model=PriceBreakdownOut)

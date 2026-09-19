@@ -24,6 +24,10 @@ const SLOT_LABELS: Record<string, string> = {
   FLASH_DEAL: "⚡ Flash Deal",
   CATEGORY_TOP: "🔝 Category Top",
   TRENDING_BADGE: "🔥 Trending Badge",
+  HERO_BANNER: "Hero Banner",
+  FLASH_DEAL: "Flash Deal",
+  CATEGORY_TOP: "Category Top",
+  TRENDING_BADGE: "Trending Badge",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -117,6 +121,7 @@ export function SupplierPromotionsPage() {
         <h1>My Promotions</h1>
         <button type="button" className="btn btn--primary" onClick={() => setShowForm((s) => !s)}>
           {showForm ? "Cancel" : "✚ Request Promotion"}
+          {showForm ? "Cancel" : "+ Request Promotion"}
         </button>
       </div>
 
@@ -192,6 +197,7 @@ export function SupplierPromotionsPage() {
 
           <p className="promo-form__cost">
             💰 Estimated cost: <strong>${estimatedCost}</strong> for {form.duration_days} days
+            Estimated cost: <strong>${estimatedCost}</strong> for {form.duration_days} days
           </p>
 
           {submitMutation.isError && (
@@ -238,6 +244,9 @@ export function SupplierPromotionsPage() {
                 👁️ {p.impressions_count} impressions &nbsp;
                 🖱️ {p.clicks_count} clicks &nbsp;
                 🛒 {p.orders_count} orders
+                {p.impressions_count} impressions &nbsp;•&nbsp;
+                {p.clicks_count} clicks &nbsp;•&nbsp;
+                {p.orders_count} orders
               </div>
             </div>
           ))}

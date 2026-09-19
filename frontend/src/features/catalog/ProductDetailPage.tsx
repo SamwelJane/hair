@@ -88,6 +88,7 @@ export function ProductDetailPage() {
           <p>{product.description}</p>
 
           <p className="muted">🚚 Ships from Vietnam · Processing time: {product.processing_time_days} days</p>
+          <p className="muted">Ships from Vietnam · Processing time: {product.processing_time_days} days</p>
 
           <dl className="product-meta">
             {specs.map(([label, value]) => (

@@ -8,6 +8,8 @@
  *   <EquityBankPaymentCard orderNumber="ORD-20250918-00123" amountKes={18500} />
  */
 
+import { useState } from "react";
+
 interface EquityBankPaymentCardProps {
   orderNumber: string;
   amountKes: number | string;
@@ -56,9 +58,8 @@ export function EquityBankPaymentCard({ orderNumber, amountKes, amountUsd }: Equ
         </ol>
 
         <div className="equity-card__note">
-          <span className="equity-card__note-icon">ℹ️</span>
           <p>
-            Your order will be confirmed once our team verifies the payment.
+            <strong>Note:</strong> Your order will be confirmed once our team verifies the payment.
             This usually takes <strong>1–2 business hours</strong> during working hours.
             Keep your M-Pesa confirmation SMS as proof of payment.
           </p>
@@ -76,7 +77,7 @@ export function EquityBankPaymentCard({ orderNumber, amountKes, amountUsd }: Equ
           </div>
           <div className="equity-card__row equity-card__row--total">
             <span>Amount</span>
-            <strong>KES {Number(amountKes).toLocaleString("en-KE")}</strong>
+            <strong>KES {Number(amountKes).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
           </div>
         </div>
       </div>
@@ -88,11 +89,15 @@ export function EquityBankPaymentCard({ orderNumber, amountKes, amountUsd }: Equ
 // ── Inline copy helper ────────────────────────────────────────────────────────
 
 function CopyField({ label, value }: { label: string; value: string }) {
+  const [copied, setCopied] = useState(false);
+
   function copy() {
     void navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
   return (
-    <span className="copy-field">
+    <span className="copy-field" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
       <strong className="copy-field__value">{value}</strong>
       <button
         type="button"
@@ -100,8 +105,16 @@ function CopyField({ label, value }: { label: string; value: string }) {
         onClick={copy}
         aria-label={`Copy ${label}`}
         title={`Copy ${label}`}
+        style={{
+          padding: "2px 8px",
+          fontSize: "0.75rem",
+          borderRadius: "4px",
+          border: "1px solid #ccc",
+          background: copied ? "#e8f5e9" : "#f5f5f5",
+          cursor: "pointer",
+        }}
       >
-        📋
+        {copied ? "Copied" : "Copy"}
       </button>
     </span>
   );

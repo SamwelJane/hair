@@ -56,6 +56,18 @@ export function HomePage() {
         <span>🚚 Sourced direct from Vietnam</span>
         <span>🔒 Secure M-Pesa &amp; bank payments</span>
         <span>📦 Tracked door-to-door to Kenya</span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          Sourced direct from Vietnam
+        </span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Secure M-Pesa &amp; bank payments
+        </span>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          Tracked door-to-door to Kenya
+        </span>
       </div>
 
       <div className="page">

@@ -19,7 +19,9 @@ export function ConfirmationPage() {
   return (
     <div className="page confirmation-page">
       <div className="confirmation-page__hero">
-        <span className="confirmation-page__tick" aria-hidden="true">✅</span>
+        <span className="confirmation-page__tick" aria-hidden="true" style={{ display: "inline-flex", justifyContent: "center", alignItems: "center", width: "48px", height: "48px", borderRadius: "50%", background: "#e8f5e9", color: "#2e7d32", margin: "0 auto 1rem" }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </span>
         <h1>Order Placed Successfully!</h1>
         <p className="confirmation-page__sub">
           Order number: <strong>{orderNumber}</strong>
@@ -66,7 +68,7 @@ export function ConfirmationPage() {
             <span>
               <strong>${order.total_amount_usd}</strong>
               {order.total_amount_kes && (
-                <span className="summary-kes"> / KES {Number(order.total_amount_kes).toLocaleString("en-KE")}</span>
+                <span className="summary-kes"> / KES {Number(order.total_amount_kes).toLocaleString("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               )}
             </span>
           </div>
@@ -77,7 +79,7 @@ export function ConfirmationPage() {
       {state.guestAccessToken && (
         <div className="callout callout--info">
           <p>
-            📧 A confirmation email has been sent. Create an account with your email to track
+            A confirmation email has been sent. Create an account with your email to track
             this order from your dashboard, or bookmark this page.
           </p>
         </div>

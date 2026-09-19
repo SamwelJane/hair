@@ -17,6 +17,8 @@ Environment variables (set via Settings in core/config.py):
 
 from __future__ import annotations
 
+import re
+
 import httpx
 import structlog
 
@@ -30,6 +32,16 @@ META_GRAPH_URL = "https://graph.facebook.com/v19.0"
 _MAX_MSG_LEN = 4096
 
 
+def normalize_phone_e164(phone: str) -> str:
+    """Normalize phone number to E.164 digits format (e.g. 254712345678)."""
+    digits = re.sub(r"\D", "", phone or "")
+    if digits.startswith("0") and len(digits) == 10:
+        return "254" + digits[1:]
+    if len(digits) == 9 and (digits.startswith("7") or digits.startswith("1")):
+        return "254" + digits
+    return digits
+
+
 async def send_text_message(to: str, body: str) -> dict:
     """Send a plain-text WhatsApp message to the given phone number (E.164).
 
@@ -37,19 +49,20 @@ async def send_text_message(to: str, body: str) -> dict:
     token is configured, logs the would-be message and returns a mock dict.
     """
     settings = get_settings()
+    normalized_to = normalize_phone_e164(to)
 
-    if not settings.meta_whatsapp_token or not settings.meta_whatsapp_phone_number_id:
+    if not settings.meta_whatsapp_token or not settings.meta_whatsapp_phone_number_id or settings.meta_whatsapp_token in ("placeholder", "your-whatsapp-token"):
         log.info(
             "meta_whatsapp.mock_send",
-            to=to,
+            to=normalized_to,
             body_preview=body[:80],
         )
-        return {"mock": True, "to": to, "status": "skipped_no_token"}
+        return {"mock": True, "to": normalized_to, "status": "skipped_no_token"}
 
     payload = {
         "messaging_product": "whatsapp",
         "recipient_type": "individual",
-        "to": to,
+        "to": normalized_to,
         "type": "text",
         "text": {"preview_url": False, "body": body[:_MAX_MSG_LEN]},
     }
@@ -66,14 +79,14 @@ async def send_text_message(to: str, body: str) -> dict:
     if resp.is_error:
         log.error(
             "meta_whatsapp.send_failed",
-            to=to,
+            to=normalized_to,
             status_code=resp.status_code,
             body=resp.text[:500],
         )
         resp.raise_for_status()
 
     result = resp.json()
-    log.info("meta_whatsapp.sent", to=to, message_id=result.get("messages", [{}])[0].get("id"))
+    log.info("meta_whatsapp.sent", to=normalized_to, message_id=result.get("messages", [{}])[0].get("id"))
     return result
 
 
@@ -84,19 +97,20 @@ async def send_template_message(to: str, template_name: str, language_code: str 
         [{"type": "header", "parameters": [...]}, {"type": "body", "parameters": [...]}]
     """
     settings = get_settings()
+    normalized_to = normalize_phone_e164(to)
 
-    if not settings.meta_whatsapp_token or not settings.meta_whatsapp_phone_number_id:
+    if not settings.meta_whatsapp_token or not settings.meta_whatsapp_phone_number_id or settings.meta_whatsapp_token in ("placeholder", "your-whatsapp-token"):
         log.info(
             "meta_whatsapp.mock_template",
-            to=to,
+            to=normalized_to,
             template=template_name,
         )
-        return {"mock": True, "to": to, "template": template_name, "status": "skipped_no_token"}
+        return {"mock": True, "to": normalized_to, "template": template_name, "status": "skipped_no_token"}
 
     payload: dict = {
         "messaging_product": "whatsapp",
         "recipient_type": "individual",
-        "to": to,
+        "to": normalized_to,
         "type": "template",
         "template": {
             "name": template_name,
@@ -118,7 +132,7 @@ async def send_template_message(to: str, template_name: str, language_code: str 
     if resp.is_error:
         log.error(
             "meta_whatsapp.template_failed",
-            to=to,
+            to=normalized_to,
             template=template_name,
             status_code=resp.status_code,
             body=resp.text[:500],
@@ -126,7 +140,7 @@ async def send_template_message(to: str, template_name: str, language_code: str 
         resp.raise_for_status()
 
     result = resp.json()
-    log.info("meta_whatsapp.template_sent", to=to, template=template_name, message_id=result.get("messages", [{}])[0].get("id"))
+    log.info("meta_whatsapp.template_sent", to=normalized_to, template=template_name, message_id=result.get("messages", [{}])[0].get("id"))
     return result
 
 
@@ -134,17 +148,17 @@ async def send_template_message(to: str, template_name: str, language_code: str 
 
 def departed_vietnam_message(order_number: str) -> str:
     return (
-        f"✈️ *Hiar Business Update*\n\n"
-        f"Great news! Your order *{order_number}* has been dispatched from our Vietnam "
-        f"warehouse and is on its way to Kenya. 🇻🇳 → 🇰🇪\n\n"
+        f"[ORDER DISPATCHED] Hiar Business Update\n\n"
+        f"Great news! Your order {order_number} has been dispatched from our Vietnam "
+        f"warehouse and is in transit to Kenya.\n\n"
         f"You will receive another update once it clears customs and is ready for collection."
     )
 
 
 def ready_for_pickup_message(order_number: str) -> str:
     return (
-        f"🎉 *Your order is ready!*\n\n"
-        f"Order *{order_number}* has cleared Kenya customs and is ready for collection "
+        f"[READY FOR PICKUP] Hiar Business\n\n"
+        f"Order {order_number} has cleared Kenya customs and is ready for collection "
         f"at our Nairobi office.\n\n"
         f"Reply with your order number at any time to check your delivery status."
     )
@@ -153,8 +167,9 @@ def ready_for_pickup_message(order_number: str) -> str:
 def order_status_message(order_number: str, status: str, tracking_number: str | None = None) -> str:
     tracking_line = f"\nTracking: {tracking_number}" if tracking_number else ""
     return (
-        f"📦 *Hiar Business — Order Update*\n\n"
-        f"Order *{order_number}* is now: *{status.replace('_', ' ').title()}*{tracking_line}\n\n"
+        f"[STATUS UPDATE] Hiar Business\n\n"
+        f"Order {order_number} is now: {status.replace('_', ' ').title()}{tracking_line}\n\n"
         f"Reply with your order number for live status."
     )
+
 

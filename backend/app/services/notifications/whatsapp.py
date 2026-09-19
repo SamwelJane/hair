@@ -36,7 +36,7 @@ def customer_order_status_whatsapp_message(*, order_number: str, status: str, tr
     tracking = f"\nTracking: {tracking_number}" if tracking_number else ""
     status_label = status.replace("_", " ").title()
     return (
-        f"📦 *Hiar Business — Order Update*\n\n"
+        f"[ORDER UPDATE] Hiar Business\n\n"
         f"Your order *{order_number}* is now: *{status_label}*{tracking}\n\n"
         f"Reply with your order number at any time for live status."
     )
@@ -44,17 +44,17 @@ def customer_order_status_whatsapp_message(*, order_number: str, status: str, tr
 
 def customer_package_received_whatsapp_message(*, order_number: str, tracking_number: str) -> str:
     return (
-        f"✅ *Package Received!*\n\n"
+        f"[PACKAGE RECEIVED] Hiar Business\n\n"
         f"Your package for order *{order_number}* has arrived at our Vietnam warehouse "
         f"and is being processed.\n"
         f"Tracking: {tracking_number}\n\n"
-        f"We'll notify you when it's dispatched to Kenya. 🇻🇳 → 🇰🇪"
+        f"We will notify you when it is dispatched to Kenya."
     )
 
 
 def customer_customs_cleared_whatsapp_message(*, order_number: str, tracking_number: str) -> str:
     return (
-        f"🎉 *Ready for Collection!*\n\n"
+        f"[READY FOR PICKUP] Hiar Business\n\n"
         f"Order *{order_number}* has cleared Kenya customs and is ready for collection "
         f"at our Nairobi office.\n"
         f"Tracking: {tracking_number}\n\n"
@@ -64,10 +64,10 @@ def customer_customs_cleared_whatsapp_message(*, order_number: str, tracking_num
 
 def customer_departed_vietnam_whatsapp_message(*, order_number: str) -> str:
     return (
-        f"✈️ *Dispatched from Vietnam!*\n\n"
+        f"[ORDER DISPATCHED] Hiar Business\n\n"
         f"Your order *{order_number}* has left our Vietnam warehouse and is on its way "
-        f"to Kenya. Expected transit time: 5–7 business days. 🇻🇳 → 🇰🇪\n\n"
-        f"We'll update you once it clears customs."
+        f"to Kenya. Expected transit time: 5–7 business days.\n\n"
+        f"We will update you once it clears customs."
     )
 
 
